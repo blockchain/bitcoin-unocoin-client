@@ -9,35 +9,14 @@ class API extends Exchange.API {
   }
 
   get isLoggedIn () {
-    // Debug: + 60 * 19 * 1000 expires the login after 1 minute
-    var tenSecondsFromNow = new Date(new Date().getTime() + 10000);
-    return Boolean(this._access_token) && this._loginExpiresAt > tenSecondsFromNow;
+    return Boolean(this.offlineToken);
   }
   get offlineToken () { return this._offlineToken; }
   get hasAccount () { return Boolean(this.offlineToken); }
 
+  // Todo: move login abstraction to exchange client
   login () {
-    var self = this;
-
-    var promise = new Promise(function (resolve, reject) {
-      assert(self._offlineToken, 'Offline token required');
-
-      var loginSuccess = function (res) {
-        self._access_token = res.access_token;
-        self._loginExpiresAt = new Date(new Date().getTime() + res.expires_in * 1000);
-        resolve();
-      };
-
-      var loginFailed = function (e) {
-        reject(e);
-      };
-      self.POST('auth', {
-        grant_type: 'offline_token',
-        offline_token: self._offlineToken
-      }).then(loginSuccess).catch(loginFailed);
-    });
-
-    return promise;
+    return Promise.resolve();
   }
 
   _url (endpoint) {
@@ -45,21 +24,22 @@ class API extends Exchange.API {
     return `https://${this._production ? '' : 'sandbox.'}unocoin.co/${endpoint}`;
   }
 
-  _request (method, endpoint, data, authorized) {
+  _request (method, endpoint, data, extraHeaders = {}, authorized) {
     assert(!authorized || this.isLoggedIn, "Can't make authorized request if not logged in");
 
-    var headers = {};
+    let headers = extraHeaders;
 
     if (authorized) {
-      headers['Authorization'] = 'Bearer ' + this._access_token;
+      headers['Authorization'] = 'Bearer ' + this._offlineToken;
     }
 
     return super._request(method, this._url(endpoint), data, headers);
   }
 
-  _authRequest (method, endpoint, data) {
+  // Todo: move authRequest abstraction to exchange client
+  _authRequest (method, endpoint, extraHeaders, data) {
     var doRequest = function () {
-      return this._request(method, endpoint, data, true);
+      return this._request(method, endpoint, data, extraHeaders, true);
     };
 
     if (this.isLoggedIn) {
@@ -69,32 +49,33 @@ class API extends Exchange.API {
     }
   }
 
-  GET (endpoint, data) {
-    return this._request('GET', endpoint, data);
+  GET (endpoint, data, extraHeaders) {
+    return this._request('GET', endpoint, data, extraHeaders);
   }
 
-  authGET (endpoint, data) {
-    return this._authRequest('GET', endpoint, data);
+  authGET (endpoint, data, extraHeaders) {
+    console.log('GET', endpoint);
+    return this._authRequest('GET', endpoint, data, extraHeaders);
   }
 
-  POST (endpoint, data) {
-    return this._request('POST', endpoint, data);
+  POST (endpoint, data, extraHeaders) {
+    return this._request('POST', endpoint, data, extraHeaders);
   }
 
-  authPOST (endpoint, data) {
-    return this._authRequest('POST', endpoint, data);
+  authPOST (endpoint, data, extraHeaders) {
+    return this._authRequest('POST', endpoint, data, extraHeaders);
   }
 
-  PATCH (endpoint, data) {
-    return this._request('PATCH', endpoint, data);
+  PATCH (endpoint, data, extraHeaders) {
+    return this._request('PATCH', endpoint, data, extraHeaders);
   }
 
-  authPATCH (endpoint, data) {
-    return this._authRequest('PATCH', endpoint, data);
+  authPATCH (endpoint, data, extraHeaders) {
+    return this._authRequest('PATCH', endpoint, data, extraHeaders);
   }
 
-  DELETE (endpoint, data) {
-    return this._authRequest('DELETE', endpoint, data);
+  DELETE (endpoint, data, extraHeaders) {
+    return this._authRequest('DELETE', endpoint, data, extraHeaders);
   }
 
 }

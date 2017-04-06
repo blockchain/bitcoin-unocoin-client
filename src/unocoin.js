@@ -17,7 +17,6 @@ class Unocoin extends Exchange.Exchange {
     assert(delegate.getToken, 'delegate.getToken() required');
 
     var obj = object || {};
-    this._partner_id = null;
     this._user = obj.user;
     this._auto_login = obj.auto_login;
     this._offlineToken = obj.offline_token;
@@ -59,11 +58,6 @@ class Unocoin extends Exchange.Exchange {
 
   get hasAccount () { return Boolean(this._offlineToken); }
 
-  get partnerId () { return this._partner_id; }
-  set partnerId (value) {
-    this._partner_id = value;
-  }
-
   get buyCurrencies () { return this._buyCurrencies; }
 
   get sellCurrencies () { return this._sellCurrencies; }
@@ -81,24 +75,13 @@ class Unocoin extends Exchange.Exchange {
     return unocoin;
   }
 
-  // Country and default currency must be set
   // Email must be set and verified
-  signup (countryCode, currencyCode) {
+  signup () {
     var self = this;
     var runChecks = function () {
       assert(!self.user, 'Already signed up');
 
       assert(self.delegate, 'ExchangeDelegate required');
-
-      assert(
-        countryCode &&
-        Exchange.Helpers.isString(countryCode) &&
-        countryCode.length === 2 &&
-        countryCode.match(/[a-zA-Z]{2}/),
-        'ISO 3166-1 alpha-2'
-      );
-
-      assert(currencyCode, 'currency required');
 
       assert(self.delegate.email(), 'email required');
       assert(self.delegate.isEmailVerified(), 'email must be verified');
@@ -106,17 +89,10 @@ class Unocoin extends Exchange.Exchange {
 
     var doSignup = function (emailToken) {
       assert(emailToken, 'email token missing');
-      return this._api.POST('signup/trader', {
-        email: self.delegate.email(),
-        partnerId: self.partnerId,
-        defaultCurrency: currencyCode, // ISO 4217
-        profile: {
-          address: {
-            country: countryCode.toUpperCase()
-          }
-        },
-        trustedEmailValidationToken: emailToken,
-        generateOfflineToken: true
+      return this._api.POST('api/v1/authentication/register', {
+        email_id: self.delegate.email()
+      }, {
+        Authorization: `Bearer ${emailToken}`
       });
     };
 

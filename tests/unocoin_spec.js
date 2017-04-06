@@ -112,10 +112,10 @@ describe('Unocoin', function () {
       c._debug = false;
 
       return spyOn(c._api, 'POST').and.callFake(function (endpoint, data) {
-        if (endpoint === 'signup/trader') {
-          if (data.email === 'duplicate@blockchain.com') {
+        if (endpoint === 'api/v1/authentication/register') {
+          if (data.email_id === 'duplicate@blockchain.com') {
             return Promise.reject('DUPLICATE_EMAIL');
-          } else if (data.email === 'fail@blockchain.com') {
+          } else if (data.email_id === 'fail@blockchain.com') {
             return Promise.reject('ERROR_MESSAGE');
           } else {
             return Promise.resolve({
@@ -186,40 +186,30 @@ describe('Unocoin', function () {
           expect(c._offlineToken).toEqual('offline-token');
         };
 
-        let promise = c.signup('NL', 'EUR').then(checks);
+        let promise = c.signup().then(checks);
 
         expect(promise).toBeResolved(done);
       });
 
-      it('requires the country', function () {
-        expect(c.signup('NL', 'EUR')).toBeResolved();
-        expect(c.signup(undefined, 'EUR')).toBeRejected();
-      });
-
-      it('requires the currency', function () {
-        expect(c.signup('NL', 'EUR')).toBeResolved();
-        expect(c.signup('NL')).toBeRejected();
-      });
-
       it('requires email', function () {
         c.delegate.email = () => null;
-        expect(c.signup('NL', 'EUR')).toBeRejected();
+        expect(c.signup()).toBeRejected();
       });
 
       it('requires verified email', function () {
         c.delegate.isEmailVerified = () => false;
-        expect(c.signup('NL', 'EUR')).toBeRejected();
+        expect(c.signup()).toBeRejected();
       });
 
       it('lets the user know if email is already registered', function (done) {
         c.delegate.email = () => 'duplicate@blockchain.com';
-        let promise = c.signup('NL', 'EUR');
+        let promise = c.signup();
         expect(promise).toBeRejectedWith('DUPLICATE_EMAIL', done);
       });
 
       it('might fail for an unexpected reason', function (done) {
         c.delegate.email = () => 'fail@blockchain.com';
-        let promise = c.signup('NL', 'EUR');
+        let promise = c.signup();
         expect(promise).toBeRejectedWith('ERROR_MESSAGE', done);
       });
     });

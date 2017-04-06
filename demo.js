@@ -109,6 +109,8 @@ if (process.env.OFFLINE_TOKEN) {
     unocoin.signup('NL', 'EUR').then(() => {
       console.log('To continue the demo with this Unocoin account:');
       console.log(`OFFLINE_TOKEN=${unocoin._offlineToken} node demo.js`);
+    }).catch((e) => {
+      console.error(e.message || e);
     });
   });
 }
