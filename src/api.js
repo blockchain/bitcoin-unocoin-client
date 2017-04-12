@@ -5,7 +5,6 @@ class API extends Exchange.API {
   constructor () {
     super();
     this._offlineToken = null;
-    this._loginExpiresAt = null;
   }
 
   get isLoggedIn () {
