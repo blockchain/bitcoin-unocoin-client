@@ -53,7 +53,6 @@ class API extends Exchange.API {
   }
 
   authGET (endpoint, data, extraHeaders) {
-    console.log('GET', endpoint);
     return this._authRequest('GET', endpoint, data, extraHeaders);
   }
 

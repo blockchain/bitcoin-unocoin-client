@@ -1,5 +1,3 @@
-'use strict';
-
 var Limit = require('./limit');
 
 module.exports = Limits;
