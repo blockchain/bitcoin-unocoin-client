@@ -128,23 +128,6 @@ class Unocoin extends Exchange.Exchange {
     return Promise.resolve(this._sellCurrencies);
   }
 
-  sell (quote, bank) {
-    assert(quote, 'Quote is required');
-    assert(quote.expiresAt > new Date(), 'QUOTE_EXPIRED');
-
-    const sellData = {
-      priceQuoteId: quote.id,
-      transferIn: {
-        medium: 'blockchain'
-      },
-      transferOut: {
-        medium: 'bank',
-        mediumReceiveAccountId: bank.id
-      }
-    };
-    return this._api.authPOST('trades', sellData);
-  }
-
   static new (delegate) {
     assert(delegate, 'Unocoin.new requires delegate');
     var object = {
