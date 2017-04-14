@@ -1,7 +1,6 @@
 var Exchange = require('bitcoin-exchange-client');
 var UnocoinProfile = require('./profile');
 var Trade = require('./trade');
-var UnocoinKYC = require('./kyc');
 var PaymentMedium = require('./payment-medium');
 var ExchangeRate = require('./exchange-rate');
 var Quote = require('./quote');
@@ -39,8 +38,6 @@ class Unocoin extends Exchange.Exchange {
       }
     }
 
-    this._kycs = [];
-
     this.exchangeRate = new ExchangeRate(this._api);
 
     this._bank = new Bank(this._api, delegate);
@@ -53,8 +50,6 @@ class Unocoin extends Exchange.Exchange {
       return this._profile;
     }
   }
-
-  get kycs () { return this._kycs; }
 
   get hasAccount () { return Boolean(this._offlineToken); }
 
@@ -123,25 +118,6 @@ class Unocoin extends Exchange.Exchange {
 
   fetchProfile () {
     return this._profile.fetch();
-  }
-
-  triggerKYC () {
-    var addKYC = (kyc) => {
-      this._kycs.push(kyc);
-      return kyc;
-    };
-
-    return UnocoinKYC.trigger(this._api).then(addKYC);
-  }
-
-  getKYCs () {
-    var save = () => this.delegate.save.bind(this.delegate)().then(() => this._kycs);
-    var update = (kycs) => {
-      this.updateList(this._kycs, kycs, UnocoinKYC);
-    };
-    return UnocoinKYC.fetchAll(this._api, this)
-                       .then(update)
-                       .then(save);
   }
 
   getBuyCurrencies () {
