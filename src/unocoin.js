@@ -26,8 +26,8 @@ class Unocoin extends Exchange.Exchange {
 
     this._profile = new UnocoinProfile(this._api);
 
-    this._buyCurrencies = null;
-    this._sellCurrencies = null;
+    this._buyCurrencies = ['INR'];
+    this._sellCurrencies = ['INR'];
 
     this._trades = [];
     if (obj.trades) {
@@ -145,35 +145,11 @@ class Unocoin extends Exchange.Exchange {
   }
 
   getBuyCurrencies () {
-    var getCurrencies = function (paymentMethods) {
-      var currencies = [];
-      for (let [, paymentMethod] of Object.entries(paymentMethods)) {
-        for (let inCurrency of paymentMethod.inCurrencies) {
-          if (currencies.indexOf(inCurrency) === -1) {
-            currencies.push(inCurrency);
-          }
-        }
-      }
-      this._buyCurrencies = JSON.parse(JSON.stringify(currencies));
-      return currencies;
-    };
-    return this.getBuyMethods().then(getCurrencies.bind(this));
+    return Promise.resolve(this._buyCurrencies);
   }
 
   getSellCurrencies () {
-    var getCurrencies = function (paymentMethods) {
-      var currencies = [];
-      for (let [, paymentMethod] of Object.entries(paymentMethods)) {
-        for (let outCurrency of paymentMethod.outCurrencies) {
-          if (currencies.indexOf(outCurrency) === -1) {
-            currencies.push(outCurrency);
-          }
-        }
-      }
-      this._sellCurrencies = JSON.parse(JSON.stringify(currencies));
-      return currencies;
-    };
-    return this.getSellMethods().then(getCurrencies.bind(this));
+    return Promise.resolve(this._sellCurrencies);
   }
 
   sell (quote, bank) {
