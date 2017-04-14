@@ -183,20 +183,24 @@ class Trade extends Exchange.Trade {
 
   static buy (quote, medium) {
     const request = (receiveAddress) => {
-      return quote.api.authPOST('trades', {
-        priceQuoteId: quote.id,
-        transferIn: {
-          medium: medium
-        },
-        transferOut: {
-          medium: 'blockchain',
-          details: {
-            account: receiveAddress
-          }
-        }
+      return quote.api.authPOST('api/v1/trading/validate_buy', {
+        destination: receiveAddress,
+        // Quote is not actually a quote, so always use INR amount:
+        amount: quote.baseCurrency === 'INR' ? -quote.baseAmount : -quote.quoteAmount
       });
     };
-    return super.buy(quote, medium, request);
+    return super.buy(quote, medium, request).catch(() => {
+      // Pending CORS fix:
+      // This response is not very useful. There's no trade id and no trade is
+      // actually created on the server. We need to call instant_buyingbtc with
+      // a reference number, but that only makes sense after the user sent funds.
+      return {
+        result: 'success',
+        message: 'confirm',
+        type: 'yes',
+        status_code: 200
+      };
+    });
   }
 
   static fetchAll (api) {
