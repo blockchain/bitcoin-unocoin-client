@@ -115,7 +115,7 @@ UnocoinProfile.prototype.fetch = function () {
     // TODO: this ignores max_buy_limit (daily?)
     parentThis._currentLimits = new Limits({
       bank: {
-        in: res.user_buy_limit
+        in: res.user_buy_limit || 0
       }
     });
 
