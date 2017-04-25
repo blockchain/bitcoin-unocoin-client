@@ -1,9 +1,4 @@
-'use strict';
-
 var assert = require('assert');
-
-var BankAccount = require('./bank-account');
-var Helpers = require('bitcoin-exchange-client').Helpers;
 
 var Exchange = require('bitcoin-exchange-client');
 
@@ -12,78 +7,43 @@ class Trade extends Exchange.Trade {
     super(api, delegate);
 
     assert(obj, 'JSON missing');
-    this._id = obj.id;
+    this._id = obj.order_id || obj.id;
     this.set(obj);
   }
 
-  get iSignThisID () { return this._iSignThisID; }
-
-  get quoteExpireTime () { return this._quoteExpireTime; }
-
-  get bankAccount () { return this._bankAccount; }
-
   get updatedAt () { return this._updatedAt; }
 
-  get receiptUrl () { return this._receiptUrl; }
-
   get isBuy () {
-    if (Boolean(this._is_buy) === this._is_buy) {
-      return this._is_buy;
-    } else if (this._is_buy === undefined && this.outCurrency === undefined) {
-      return true; // For older test wallets, can be safely removed later.
-    } else {
-      return this.outCurrency === 'BTC';
-    }
+    return this._is_buy;
   }
 
   set (obj) {
-    if ([
-      'awaiting_transfer_in',
-      'processing',
-      'reviewing',
-      'completed',
-      'completed_test',
-      'cancelled',
-      'rejected',
-      'expired'
-    ].indexOf(obj.state) === -1) {
-      console.warn('Unknown state:', obj.state);
-    }
-    if (this._isDeclined && obj.state === 'awaiting_transfer_in') {
-      // Unocoin API may lag a bit behind the iSignThis iframe.
-      this._state = 'rejected';
-    } else {
-      this._state = obj.state;
-    }
-    this._is_buy = obj.is_buy;
+    //   'awaiting_transfer_in',
+    //   'processing',
+    //   'reviewing',
+    //   'completed',
+    //   'completed_test',
+    //   'cancelled',
+    //   'rejected',
+    //   'expired'
 
-    this._inCurrency = obj.inCurrency;
-    this._outCurrency = obj.outCurrency;
+    // TODO: use API state field when available
+    this._state = 'awaiting_reference_number';
 
-    if (obj.transferIn) {
-      this._medium = obj.transferIn.medium;
-      this._sendAmount = this._inCurrency === 'BTC'
-        ? Helpers.toSatoshi(obj.transferIn.sendAmount)
-        : Helpers.toCents(obj.transferIn.sendAmount);
-    }
+    this._is_buy = true; // Assume buy
 
-    if (this._inCurrency === 'BTC') {
-      this._inAmount = Helpers.toSatoshi(obj.inAmount);
-      this._outAmount = Helpers.toCents(obj.outAmount);
-      this._outAmountExpected = Helpers.toCents(obj.outAmountExpected);
-    } else {
-      this._inAmount = Helpers.toCents(obj.inAmount);
-      this._outAmount = Helpers.toSatoshi(obj.outAmount);
-      this._outAmountExpected = Helpers.toSatoshi(obj.outAmountExpected);
-    }
+    this._inCurrency = 'INR';
+    this._outCurrency = 'BTC';
 
-    // for sell trades - need bank info
-    if (obj.transferIn) {
-      if (obj.transferIn.medium === 'blockchain') {
-        this._bankName = obj.transferOut.details.bank.name;
-        this._bankAccountNumber = obj.transferOut.details.account.number;
-      }
-    }
+    this._medium = 'bank';
+
+    // TODO: API support (or pass value in from request)
+    this._inAmount = 75000;// obj.amount;
+    this._sendAmount = this._inAmount;
+
+    // TODO: API support (or estimate based on ticker)
+    this._outAmount = this._inAmount / 75000 * 100000000;
+    this._outAmountExpected = this._outAmount;
 
     if (obj.confirmed === Boolean(obj.confirmed)) {
       this._delegate.deserializeExtraFields(obj, this);
@@ -95,24 +55,6 @@ class Trade extends Exchange.Trade {
       if (this.debug) {
         // This log only happens if .set() is called after .debug is set.
         console.info('Trade ' + this.id + ' from Unocoin API');
-      }
-      this._createdAt = new Date(obj.createTime);
-      this._updatedAt = new Date(obj.updateTime);
-      this._quoteExpireTime = new Date(obj.quoteExpireTime);
-      this._receiptUrl = obj.receiptUrl;
-
-      if (this._inCurrency !== 'BTC') {
-        // NOTE: this field is currently missing in the Unocoin API:
-        if (obj.transferOut && obj.transferOutdetails && obj.transferOutdetails.transaction) {
-          this._txHash = obj.transferOutdetails.transaction;
-        }
-
-        if (this._medium === 'bank') {
-          this._bankAccount = new BankAccount(obj.transferIn.details);
-        }
-
-        this._receiveAddress = obj.transferOut.details.account;
-        this._iSignThisID = obj.transferIn.details.paymentId;
       }
     }
     return this;
@@ -145,21 +87,17 @@ class Trade extends Exchange.Trade {
       }
 
       var oneMinuteAgo = new Date(new Date().getTime() - 60 * 1000);
-      if (this.quoteExpireTime > new Date()) {
-        // Quoted price still valid
-        return Promise.resolve(this.outAmountExpected);
+
+      // Estimate BTC expected based on current exchange rate:
+      if (this._lastBtcExpectedGuessAt > oneMinuteAgo) {
+        return Promise.resolve(this._lastBtcExpectedGuess);
       } else {
-        // Estimate BTC expected based on current exchange rate:
-        if (this._lastBtcExpectedGuessAt > oneMinuteAgo) {
-          return Promise.resolve(this._lastBtcExpectedGuess);
-        } else {
-          var processQuote = (quote) => {
-            this._lastBtcExpectedGuess = quote.quoteAmount;
-            this._lastBtcExpectedGuessAt = new Date();
-            return this._lastBtcExpectedGuess;
-          };
-          return this._getQuote(this._api, this._delegate, -this.inAmount, this.inCurrency, this.outCurrency, this._debug).then(processQuote);
-        }
+        var processQuote = (quote) => {
+          this._lastBtcExpectedGuess = quote.quoteAmount;
+          this._lastBtcExpectedGuessAt = new Date();
+          return this._lastBtcExpectedGuess;
+        };
+        return this._getQuote(this._api, this._delegate, -this.inAmount, this.inCurrency, this.outCurrency, this._debug).then(processQuote);
       }
     } else {
       return Promise.reject();
@@ -176,22 +114,14 @@ class Trade extends Exchange.Trade {
     }).then(this._delegate.save.bind(this._delegate));
   }
 
-  // QA tool:
-  expireQuote () {
-    this._quoteExpireTime = new Date(new Date().getTime() + 3000);
-  }
-
   static buy (quote, medium) {
     const request = (receiveAddress) => {
-      return quote.api.authPOST('api/v1/trading/validate_buy', {
+      return quote.api.authPOST('api/v1/trading/instant_buyingbtc', {
         destination: receiveAddress,
-        // Quote is not actually a quote, so always use INR amount:
+        reference_number: 'placeholder',
         amount: quote.baseCurrency === 'INR' ? -quote.baseAmount : -quote.quoteAmount
       });
     };
-    // This response is not very useful. There's no trade id and no trade is
-    // actually created on the server. We need to call instant_buyingbtc with
-    // a reference number, but that only makes sense after the user sent funds.
     return super.buy(quote, medium, request);
   }
 
@@ -218,6 +148,22 @@ class Trade extends Exchange.Trade {
             .then(this.set.bind(this))
             .then(this._delegate.save.bind(this._delegate))
             .then(this.self.bind(this));
+  }
+
+  // TODO: move to bitcoin-exchange-client once trade states are settled.
+  static filteredTrades (trades) {
+    return trades.filter(function (trade) {
+      // Only consider transactions that are complete or that we're still
+      // expecting payment for:
+      return [
+        'awaiting_reference_number',
+        'awaiting_transfer_in',
+        'processing',
+        'reviewing',
+        'completed',
+        'completed_test'
+      ].indexOf(trade.state) > -1;
+    });
   }
 
   toJSON () {
