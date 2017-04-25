@@ -28,7 +28,7 @@ class Trade extends Exchange.Trade {
     //   'expired'
 
     // TODO: use API state field when available
-    this._state = 'awaiting_reference_number';
+    this._state = obj.state || 'awaiting_reference_number';
 
     this._is_buy = true; // Assume buy
 
@@ -138,6 +138,25 @@ class Trade extends Exchange.Trade {
             .then(this.set.bind(this))
             .then(this._delegate.save.bind(this._delegate))
             .then(this.self.bind(this));
+  }
+
+  addReferenceNumber (ref) {
+    let processResult = (res) => {
+      if (res.status_code === 200) {
+        this._state = 'awaiting_transfer_in';
+        return Promise.resolve();
+      } else {
+        console.error('Failed to set reference number', res.status_code, res.message);
+        return Promise.reject();
+      }
+    };
+    return this._api.authPOST('api/v1/wallet/add_reference', {
+      inr_transaction_id: this._id,
+      ref_num: ref
+    })
+      .then(processResult)
+      .then(this._delegate.save.bind(this._delegate))
+      .then(this.self.bind(this));
   }
 
   // TODO: move to bitcoin-exchange-client once trade states are settled.

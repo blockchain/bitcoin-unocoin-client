@@ -79,6 +79,10 @@ if (process.env.OFFLINE_TOKEN) {
           receiveAddress = result.receive_address;
           paymentMediums.bank.buy().then((trade) => {
             console.log(`Created trade ${trade.id}`);
+            // Add reference number after user made payment:
+            trade.addReferenceNumber('2017-04').then(res => {
+              console.log('Added reference number to trade');
+            });
           });
         });
       });
