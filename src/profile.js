@@ -15,12 +15,6 @@ Object.defineProperties(UnocoinProfile.prototype, {
       return this._full_name;
     }
   },
-  'email': {
-    configurable: false,
-    get: function () {
-      return this._email;
-    }
-  },
   'mobile': {
     configurable: false,
     get: function () {
