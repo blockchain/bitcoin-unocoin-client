@@ -36,7 +36,7 @@ class API extends Exchange.API {
   }
 
   // Todo: move authRequest abstraction to exchange client
-  _authRequest (method, endpoint, extraHeaders, data) {
+  _authRequest (method, endpoint, data, extraHeaders) {
     var doRequest = function () {
       return this._request(method, endpoint, data, extraHeaders, true);
     };
