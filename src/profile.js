@@ -92,19 +92,21 @@ UnocoinProfile.prototype.fetch = function () {
     //   status_code: 200
     // };
 
-    parentThis._full_name = res.name;
+    parentThis._full_name = res.name || null;
 
-    parentThis._mobile = '+91' + res.phone_number;
+    parentThis._mobile = res.phone_number ? '+91' + res.phone_number : null;
 
-    let [state, city, pin] = res.state_city_pin.split('*');
+    if (res.state_city_pin) {
+      let [state, city, pin] = res.state_city_pin.split('*');
 
-    parentThis.address = new Address({
-      street: res.address,
-      city: city,
-      state: state, // TODO: convert to ISO-3116-2
-      zipcode: pin,
-      country: 'IN'
-    });
+      parentThis.address = new Address({
+        street: res.address,
+        city: city,
+        state: state, // TODO: convert to ISO-3116-2
+        zipcode: pin,
+        country: 'IN'
+      });
+    }
 
     parentThis._level = res.user_status;
     // TODO: this ignores max_buy_limit (daily?)
