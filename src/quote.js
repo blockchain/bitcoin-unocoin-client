@@ -13,19 +13,23 @@ class Quote extends Exchange.Quote {
     this._quoteCurrency = obj.quoteCurrency;
     this._expiresAt = expiresAt;
 
+    this._feeCurrency = obj.feeCurrency;
+
     if (this._baseCurrency === 'BTC') {
       this._baseAmount = Math.round(obj.baseAmount * 100000000);
       this._quoteAmount = Math.round(obj.quoteAmount);
+      this._feeAmount = Math.round(obj.feeAmount);
     } else {
       this._baseAmount = Math.round(obj.baseAmount);
       this._quoteAmount = Math.round(obj.quoteAmount * 100000000);
+      this._feeAmount = Math.round(obj.feeAmount * 100000000);
     }
   }
 
   // Unocoin API does not have the concept of quotes. Instead, we just get the
   // latest price and wrap in a Quote object.
   static getQuote (api, delegate, amount, baseCurrency, quoteCurrency, debug) {
-    const processQuote = (prices) => {
+    const processQuote = (ticker) => {
       let pseudoQuote = {};
 
       // Some random unique UUID will do: http://stackoverflow.com/a/2117523
@@ -42,37 +46,40 @@ class Quote extends Exchange.Quote {
       pseudoQuote.baseCurrency = baseCurrency;
       pseudoQuote.quoteCurrency = quoteCurrency;
 
-      let buyPrice = parseInt(prices.buybtc, 10);
+      let buyPrice = ticker.buy;
       pseudoQuote.baseAmount = amount;
 
+      let buyBeforeFees = ticker.buy / (1.00 + (ticker.buy_btc_fee + ticker.buy_btc_tax / 100.0) / 100.0);
+      let buyFee = ticker.buy - buyBeforeFees;
+
       // Assuming buy:
+
       if (baseCurrency === 'INR') {
         pseudoQuote.quoteAmount = amount / buyPrice;
+        pseudoQuote.feeCurrency = 'BTC';
+        pseudoQuote.feeAmount = buyFee / buyPrice;
       } else {
         pseudoQuote.quoteAmount = amount * buyPrice;
+        pseudoQuote.feeCurrency = 'INR';
+        pseudoQuote.feeAmount = Math.round(buyFee);
       }
 
       return new Quote(pseudoQuote, api, delegate);
     };
 
     const getQuote = (_baseAmount) => {
-      var getAnonymousQuote = function () {
-        // Not supported yet, using hardcoded account as temporary workaround:
-        return api.POST('/api/v1/general/prices', {}, {
-          Authorization: 'Bearer: 06656025315290cc7ce582972cf82a67a2298f86'
+      var getQuote = function () {
+        return api.authPOST('trade?all').catch(() => {
+          // Pending CORS and content-type fix
+          return {
+            buy: 81944,
+            buy_btc_fee: 1, // Percent
+            buy_btc_tax: 15 // Percent tax on fee
+          };
         });
       };
 
-      var getQuote = function () {
-        // TODO: user ticker instead
-        return api.authPOST('/api/v1/general/prices');
-      };
-
-      if (!api.hasAccount) {
-        return getAnonymousQuote().then(processQuote);
-      } else {
-        return getQuote().then(processQuote);
-      }
+      return getQuote().then(processQuote);
     };
 
     return super.getQuote(amount, baseCurrency, quoteCurrency, ['BTC', 'INR'], debug)
