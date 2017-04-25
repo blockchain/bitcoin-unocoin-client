@@ -104,16 +104,6 @@ class Trade extends Exchange.Trade {
     }
   }
 
-  // QA tool:
-  fakeBankTransfer () {
-    var self = this;
-
-    return self._api.authPOST('trades/' + self._id + '/test/bank-transfer', {
-      sendAmount: parseFloat((self.inAmount / 100).toFixed(2)),
-      currency: self.inCurrency
-    }).then(this._delegate.save.bind(this._delegate));
-  }
-
   static buy (quote, medium) {
     const request = (receiveAddress) => {
       return quote.api.authPOST('api/v1/trading/instant_buyingbtc', {
