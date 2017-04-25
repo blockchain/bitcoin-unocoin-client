@@ -64,30 +64,8 @@ class Quote extends Exchange.Quote {
       };
 
       var getQuote = function () {
-        // TODO: this response is huge, so we should probably cache it for some
-        //       time, and create a new Quote object based on that cache.
-        return api.authPOST('/api/v1/general/prices').catch(() => {
-          // Workaround pending CORS fix
-          return {
-            result: 'notify',
-            buybtc: '76779',
-            sellbtc: '73516',
-            buyfees: '1',
-            buytax: '15',
-            sellfee: '2',
-            selltax: '15',
-            netbankingfees: '1.9',
-            max_24_buy: '78177',
-            min_24_buy: '75440',
-            buy_24_rates: [
-              {
-                'time': '2017-04-14 17:50:02',
-                'buy_price': '76779'
-              }
-              // This list goes on...
-            ]
-          };
-        });
+        // TODO: user ticker instead
+        return api.authPOST('/api/v1/general/prices');
       };
 
       if (!api.hasAccount) {
