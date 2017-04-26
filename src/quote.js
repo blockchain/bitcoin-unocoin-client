@@ -69,14 +69,7 @@ class Quote extends Exchange.Quote {
 
     const getQuote = (_baseAmount) => {
       var getQuote = function () {
-        return api.authPOST('trade?all').catch(() => {
-          // Pending CORS and content-type fix
-          return {
-            buy: 81944,
-            buy_btc_fee: 1, // Percent
-            buy_btc_tax: 15 // Percent tax on fee
-          };
-        });
+        return api.authPOST('trade?all');
       };
 
       return getQuote().then(processQuote);
