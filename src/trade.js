@@ -37,8 +37,9 @@ class Trade extends Exchange.Trade {
 
     this._medium = 'bank';
 
-    // TODO: API support (or pass value in from request)
-    this._inAmount = 75000;// obj.amount;
+    this._createdAt = new Date(obj.unixtime * 1000);
+
+    this._inAmount = obj.inr;
     this._sendAmount = this._inAmount;
 
     // TODO: API support (or estimate based on ticker)
@@ -108,8 +109,13 @@ class Trade extends Exchange.Trade {
     const request = (receiveAddress) => {
       return quote.api.authPOST('api/v1/trading/instant_buyingbtc', {
         destination: receiveAddress,
-        reference_number: 'placeholder',
         amount: quote.baseCurrency === 'INR' ? -quote.baseAmount : -quote.quoteAmount
+      }).then((res) => {
+        if (res.status_code === 200) {
+          return res;
+        } else {
+          return Promise.reject(res.message);
+        }
       });
     };
     return super.buy(quote, medium, request);
