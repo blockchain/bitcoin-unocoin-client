@@ -1,5 +1,5 @@
 var Exchange = require('bitcoin-exchange-client');
-var UnocoinProfile = require('./profile');
+var Profile = require('./profile');
 var Trade = require('./trade');
 var PaymentMedium = require('./payment-medium');
 var ExchangeRate = require('./exchange-rate');
@@ -23,7 +23,7 @@ class Unocoin extends Exchange.Exchange {
     this._api = new API('https://app-api.unocoin.com/');
     this._api._offlineToken = this._offlineToken;
 
-    this._profile = new UnocoinProfile(this._api);
+    this._profile = null;
 
     this._buyCurrencies = ['INR'];
     this._sellCurrencies = ['INR'];
@@ -44,11 +44,7 @@ class Unocoin extends Exchange.Exchange {
   }
 
   get profile () {
-    if (!this._profile._did_fetch) {
-      return null;
-    } else {
-      return this._profile;
-    }
+    return this._profile;
   }
 
   get hasAccount () { return Boolean(this._offlineToken); }
@@ -109,7 +105,10 @@ class Unocoin extends Exchange.Exchange {
   }
 
   fetchProfile () {
-    return this._profile.fetch();
+    return Profile.fetch(this.api).then(profile => {
+      this._profile = profile;
+      return profile;
+    });
   }
 
   getBuyCurrencies () {

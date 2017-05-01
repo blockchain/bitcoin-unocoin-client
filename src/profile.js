@@ -1,58 +1,34 @@
 var Address = require('./address');
 var Limits = require('./limits');
+var assert = require('assert');
 
-module.exports = UnocoinProfile;
+class Profile {
+  constructor (obj, api) {
+    this._api = api;
+    this._did_fetch = false;
 
-function UnocoinProfile (api) {
-  this._api = api;
-  this._did_fetch;
-}
+    this._readOnly = false;
+    this._dirty = false;
 
-Object.defineProperties(UnocoinProfile.prototype, {
-  'fullName': {
-    configurable: false,
-    get: function () {
-      return this._full_name;
+    if (obj.user_status > 1) {
+      this._readOnly = true;
     }
-  },
-  'mobile': {
-    configurable: false,
-    get: function () {
-      return this._mobile;
-    }
-  },
-  'level': {
-    configurable: false,
-    get: function () {
-      return this._level;
-    }
-  },
-  'currentLimits': {
-    configurable: false,
-    get: function () {
-      return this._currentLimits;
-    }
-  }
-});
 
-UnocoinProfile.prototype.fetch = function () {
-  var parentThis = this;
-  return this._api.authGET('api/v1/wallet/profiledetails').then(function (res) {
     // Unverified user:
-    // let res = {
-    //   result: 'notify',
+    // let obj = {
+    //   objult: 'notify',
     //   message: 'Unverified User',
     //   user_status: 1,
     //   status_code: 200
     // };
 
     // Pending verification:
-    // let res = {
-    //   result: 'notify',
+    // let obj = {
+    //   objult: 'notify',
     //   user_status: 2,
     //   name: 'John Do',
     //   phone_number: '1234567893',
-    //   address: 'Abc #1024 6th cross',
+    //   addobjs: 'Abc #1024 6th cross',
     //   state_city_pin: 'Karnataka*Bangalore*560011',
     //   pancard_number: 'BAD876G570',
     //   photo: 'yes',
@@ -64,14 +40,14 @@ UnocoinProfile.prototype.fetch = function () {
     // };
 
     // Verified user:
-    // let res = {
-    //   result: 'notify',
+    // let obj = {
+    //   objult: 'notify',
     //   status: 'Verified User',
     //   user_status: 3,
     //   id: '206',
     //   name: 'John Do',
     //   phone_number: '1234567893',
-    //   address: 'Abc #1024 6th cross',
+    //   addobjs: 'Abc #1024 6th cross',
     //   state_city_pin: 'Karnataka*Bangalore*560011',
     //   pancard_number: 'BAD876G570',
     //   photo: 'yes',
@@ -86,15 +62,15 @@ UnocoinProfile.prototype.fetch = function () {
     //   status_code: 200
     // };
 
-    parentThis._full_name = res.name || null;
+    this._full_name = obj.name || null;
 
-    parentThis._mobile = res.phone_number ? '+91' + res.phone_number : null;
+    this._mobile = obj.phone_number ? '+91' + obj.phone_number : null;
 
-    if (res.state_city_pin) {
-      let [state, city, pin] = res.state_city_pin.split('*');
+    if (obj.state_city_pin) {
+      let [state, city, pin] = obj.state_city_pin.split('*');
 
-      parentThis.address = new Address({
-        street: res.address,
+      this.address = new Address({
+        street: obj.address,
         city: city,
         state: state, // TODO: convert to ISO-3116-2
         zipcode: pin,
@@ -102,16 +78,56 @@ UnocoinProfile.prototype.fetch = function () {
       });
     }
 
-    parentThis._level = res.user_status;
-    // TODO: this ignores max_buy_limit (daily?)
-    parentThis._currentLimits = new Limits({
+    this._level = obj.user_status;
+    // TODO: this ignoobj max_buy_limit (daily?)
+    this._currentLimits = new Limits({
       bank: {
-        in: res.user_buy_limit || 0
+        in: obj.user_buy_limit || 0
       }
     });
+  }
 
-    parentThis._did_fetch = true;
+  get readOnly () {
+    return this._readOnly;
+  }
 
-    return parentThis;
-  });
-};
+  get fullName () {
+    return this._full_name;
+  }
+
+  set fullName (val) {
+    assert(!this.readOnly, 'Ready only');
+    if (this._full_name !== val) {
+      this._dirty = true;
+    }
+    this._full_name = val;
+  }
+
+  get mobile () {
+    return this._mobile;
+  }
+
+  set mobile (val) {
+    assert(!this.readOnly, 'Ready only');
+    if (this._mobile !== val) {
+      this._dirty = true;
+    }
+    this._mobile = val;
+  }
+
+  get level () {
+    return this._level;
+  }
+
+  get currentLimits () {
+    return this._currentLimits;
+  }
+
+  static fetch (api) {
+    return api.authGET('api/v1/wallet/profiledetails').then(function (res) {
+      return new Profile(res, api);
+    });
+  }
+}
+
+module.exports = Profile;
