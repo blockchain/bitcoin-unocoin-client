@@ -31,7 +31,7 @@ class Unocoin extends Exchange.Exchange {
     this._trades = [];
     if (obj.trades) {
       for (let tradeObj of obj.trades) {
-        var trade = new Trade(tradeObj, this._api, delegate, this);
+        var trade = new Trade(tradeObj, this._api, delegate);
         trade._getQuote = Quote.getQuote; // Prevents circular dependency
         trade.debug = this._debug;
         this._trades.push(trade);
