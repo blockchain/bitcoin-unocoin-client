@@ -107,6 +107,10 @@ class Profile {
       this._photos.address = true;
     }
 
+    this._bankAccountNumber = null;
+
+    this._ifsc = null;
+
     this._level = obj.user_status;
     // TODO: this ignoobj max_buy_limit (daily?)
     this._currentLimits = new Limits({
@@ -129,7 +133,7 @@ class Profile {
   }
 
   get complete () {
-    return Boolean(
+    return this.level > 1 || Boolean(
       this.photosComplete &&
       this.address.complete &&
       this.fullName &&
@@ -238,6 +242,7 @@ class Profile {
   }
 
   verify () {
+    assert(this.level < 2, 'Already submitted');
     assert(this.complete, 'Missing info, always check "complete" first');
     assert(!this.readOnly, 'Profile is read-only');
 
@@ -259,6 +264,10 @@ class Profile {
       if (res.status_code === 200) {
         this._dirty = false;
         this._address.didSave();
+
+        // TODO: refresh profile to be on the safe side
+        this._level = 2;
+        this._readOnly = true;
         this._address.readOnly = true;
       } else {
         return Promise.reject(res.message);
