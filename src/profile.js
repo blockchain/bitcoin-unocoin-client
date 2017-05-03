@@ -75,11 +75,15 @@ class Profile {
         street: obj.address,
         city: city,
         state: state, // TODO: convert to ISO-3116-2
-        zipcode: pin,
-        country: 'IN'
+        zipcode: pin
       });
+    } else {
+      this._address = new Address(null);
+    }
 
-      this._address.readOnly = this._readOnly;
+    this._address.readOnly = this._readOnly;
+
+
     }
 
     this._level = obj.user_status;
@@ -93,6 +97,10 @@ class Profile {
 
   get readOnly () {
     return this._readOnly;
+  }
+
+  get dirty () {
+    return this._dirty || this._address.dirty;
   }
 
   get address () {

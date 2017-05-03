@@ -2,11 +2,19 @@ var assert = require('assert');
 
 class Address {
   constructor (obj) {
-    this._street = obj.street;
-    this._city = obj.city;
-    this._state = obj.state;
-    this._zipcode = obj.zipcode;
-    this._country = obj.country;
+    if (obj) {
+      this._street = obj.street;
+      this._city = obj.city;
+      this._state = obj.state;
+      this._zipcode = obj.zipcode;
+      this._country = 'IN';
+    } else {
+      this._street = null;
+      this._city = null;
+      this._state = null;
+      this._zipcode = null;
+      this._country = 'IN';
+    }
 
     this._dirty = false;
   }
