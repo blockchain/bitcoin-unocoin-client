@@ -71,13 +71,15 @@ class Profile {
     if (obj.state_city_pin) {
       let [state, city, pin] = obj.state_city_pin.split('*');
 
-      this.address = new Address({
+      this._address = new Address({
         street: obj.address,
         city: city,
         state: state, // TODO: convert to ISO-3116-2
         zipcode: pin,
         country: 'IN'
       });
+
+      this._address.readOnly = this._readOnly;
     }
 
     this._level = obj.user_status;
@@ -91,6 +93,10 @@ class Profile {
 
   get readOnly () {
     return this._readOnly;
+  }
+
+  get address () {
+    return this._address;
   }
 
   get fullName () {
@@ -135,6 +141,13 @@ class Profile {
 
   get currentLimits () {
     return this._currentLimits;
+  }
+
+  verify () {
+    // ...
+    this._dirty = false;
+    this._address.didSave();
+    this._address.readOnly = true;
   }
 
   static fetch (api) {
