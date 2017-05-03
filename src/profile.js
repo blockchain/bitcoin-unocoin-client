@@ -66,6 +66,8 @@ class Profile {
 
     this._mobile = obj.phone_number ? '+91' + obj.phone_number : null;
 
+    this._pancard_number = obj.pancard_number || null;
+
     if (obj.state_city_pin) {
       let [state, city, pin] = obj.state_city_pin.split('*');
 
@@ -113,6 +115,18 @@ class Profile {
       this._dirty = true;
     }
     this._mobile = val;
+  }
+
+  get pancard () {
+    return this._pancard_number;
+  }
+
+  set pancard (val) {
+    assert(!this.readOnly, 'Ready only');
+    if (this._pancard_number !== val) {
+      this._pancard_number = true;
+    }
+    this._pancard_number = val;
   }
 
   get level () {
