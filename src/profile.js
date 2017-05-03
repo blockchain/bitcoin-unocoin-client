@@ -134,7 +134,9 @@ class Profile {
       this.address.complete &&
       this.fullName &&
       this.mobile &&
-      this.pancard
+      this.pancard &&
+      this.bankAccountNumber &&
+      this.ifsc
     );
   }
 
@@ -173,9 +175,33 @@ class Profile {
   set pancard (val) {
     assert(!this.readOnly, 'Ready only');
     if (this._pancard_number !== val) {
-      this._pancard_number = true;
+      this._dirty = true;
     }
     this._pancard_number = val;
+  }
+
+  get bankAccountNumber () {
+    return this._bank_account_number;
+  }
+
+  set bankAccountNumber (val) {
+    assert(!this.readOnly, 'Ready only');
+    if (this._bank_account_number !== val) {
+      this._dirty = true;
+    }
+    this._bank_account_number = val;
+  }
+
+  get ifsc () {
+    return this._ifsc;
+  }
+
+  set ifsc (val) {
+    assert(!this.readOnly, 'Ready only');
+    if (this._ifsc !== val) {
+      this._dirty = true;
+    }
+    this._ifsc = val;
   }
 
   get photos () {
@@ -214,9 +240,30 @@ class Profile {
   verify () {
     assert(this.complete, 'Missing info, always check "complete" first');
     assert(!this.readOnly, 'Profile is read-only');
-    this._dirty = false;
-    this._address.didSave();
-    this._address.readOnly = true;
+
+    return this._api.authPOST('api/v1/settings/uploaduserprofile', {
+      name: this.fullName,
+      mobile: this.mobile,
+      pannumber: this.pancard,
+      address: this.address.street,
+      state: this.address.state,
+      city: this.address.city,
+      pincode: this.address.zipcode,
+      bank_accnum: this.bankAccountNumber,
+      ifsc: this.ifsc,
+      pancard_photo: this.photos.pancard.base64,
+      photo: this.photos.photo.base64,
+      address_proof: this.photos.address.base64,
+      id_proof: this.photos.id.base64
+    }).then(res => {
+      if (res.status_code === 200) {
+        this._dirty = false;
+        this._address.didSave();
+        this._address.readOnly = true;
+      } else {
+        return Promise.reject(res.message);
+      }
+    });
   }
 
   static fetch (api) {
