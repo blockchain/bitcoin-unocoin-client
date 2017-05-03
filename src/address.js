@@ -35,6 +35,10 @@ class Address {
     this._readOnly = val;
   }
 
+  get complete () {
+    return Boolean(this._street && this._city && this._state && this._zipcode);
+  }
+
   get city () {
     return this._city;
   }

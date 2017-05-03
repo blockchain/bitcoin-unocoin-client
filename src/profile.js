@@ -124,6 +124,20 @@ class Profile {
     return this._dirty || this._address.dirty;
   }
 
+  get photosComplete () {
+    return Boolean(this._photos.id && this._photos.address && this._photos.pancard && this.photos.photo);
+  }
+
+  get complete () {
+    return Boolean(
+      this.photosComplete &&
+      this.address.complete &&
+      this.fullName &&
+      this.mobile &&
+      this.pancard
+    );
+  }
+
   get address () {
     return this._address;
   }
@@ -198,7 +212,8 @@ class Profile {
   }
 
   verify () {
-    // ...
+    assert(this.complete, 'Missing info, always check "complete" first');
+    assert(!this.readOnly, 'Profile is read-only');
     this._dirty = false;
     this._address.didSave();
     this._address.readOnly = true;
