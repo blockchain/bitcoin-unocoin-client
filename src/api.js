@@ -18,6 +18,10 @@ class API extends Exchange.API {
     return Promise.resolve();
   }
 
+  photoUrl (filename) {
+    return this._url(`photos/${filename}`);
+  }
+
   _url (endpoint) {
     endpoint = endpoint || '';
     return `https://${this._production ? '' : 'sandbox.'}unocoin.co/${endpoint}`;

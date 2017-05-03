@@ -1,5 +1,6 @@
 var Address = require('./address');
 var Limits = require('./limits');
+var Photo = require('./photo');
 var assert = require('assert');
 
 class Profile {
@@ -9,6 +10,13 @@ class Profile {
 
     this._readOnly = false;
     this._dirty = false;
+
+    this._photos = {
+      pancard: null,
+      address: null,
+      id: null,
+      photo: null
+    };
 
     if (obj.user_status > 1) {
       this._readOnly = true;
@@ -83,7 +91,20 @@ class Profile {
 
     this._address.readOnly = this._readOnly;
 
+    if (obj.photo_img) {
+      this._photos.photo = new Photo(null, this._api, obj.photo_img);
+    }
 
+    if (obj.passport) {
+      this._photos.id = true;
+    }
+
+    if (obj.pancard) {
+      this._photos.pancard = true;
+    }
+
+    if (obj.adhar_dl) { // Address proof picture?
+      this._photos.address = true;
     }
 
     this._level = obj.user_status;
@@ -143,12 +164,37 @@ class Profile {
     this._pancard_number = val;
   }
 
+  get photos () {
+    return this._photos;
+  }
+
   get level () {
     return this._level;
   }
 
   get currentLimits () {
     return this._currentLimits;
+  }
+
+  addPhoto (type, base64) {
+    switch (type) {
+      case 'pancard':
+        this._photos.pancard = new Photo(base64);
+        break;
+      case 'address':
+        this._photos.address = new Photo(base64);
+        break;
+      case 'id':
+        this._photos.id = new Photo(base64);
+        break;
+      case 'photo':
+        this._photos.photo = new Photo(base64);
+        break;
+      default:
+        assert(false, 'specify pancard, address, id or photo');
+        break;
+    }
+    this._dirty = true;
   }
 
   verify () {
