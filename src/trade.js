@@ -207,22 +207,6 @@ class Trade extends Exchange.Trade {
       .then(this.self.bind(this));
   }
 
-  // TODO: move to bitcoin-exchange-client once trade states are settled.
-  static filteredTrades (trades) {
-    return trades.filter(function (trade) {
-      // Only consider transactions that are complete or that we're still
-      // expecting payment for:
-      return [
-        'awaiting_reference_number',
-        'awaiting_transfer_in',
-        'processing',
-        'reviewing',
-        'completed',
-        'completed_test'
-      ].indexOf(trade.state) > -1;
-    });
-  }
-
   static idFromAPI (obj) {
     // order_id is an integer when creating a trade, but a string when listing
     return parseInt(obj.order_id);
