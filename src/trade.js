@@ -36,6 +36,8 @@ class Trade extends Exchange.Trade {
   }
 
   setFromAPI (obj) {
+    super.setFromAPI();
+
     /* istanbul ignore if */
     if (this.debug) {
       console.info('Trade ' + this.id + ' from Unocoin API');
