@@ -5,7 +5,7 @@ var Helpers = Exchange.Helpers;
 
 class Trade extends Exchange.Trade {
   constructor (obj, api, delegate) {
-    super(api, delegate);
+    super(obj, api, delegate);
 
     assert(obj || obj === null, 'JSON or null missing');
 

@@ -10,33 +10,23 @@ var Bank = require('./bank');
 var assert = require('assert');
 
 class Unocoin extends Exchange.Exchange {
-  constructor (object, delegate) {
-    super(delegate, Trade, Quote, PaymentMedium);
+  constructor (obj, delegate) {
+    const api = new API('https://app-api.unocoin.com/');
+
+    super(obj, delegate, api, Trade, Quote, PaymentMedium);
 
     assert(delegate.getToken, 'delegate.getToken() required');
 
-    var obj = object || {};
     this._user = obj.user;
     this._auto_login = obj.auto_login;
     this._offlineToken = obj.offline_token;
 
-    this._api = new API('https://app-api.unocoin.com/');
     this._api._offlineToken = this._offlineToken;
 
     this._profile = null;
 
     this._buyCurrencies = ['INR'];
     this._sellCurrencies = ['INR'];
-
-    this._trades = [];
-    if (obj.trades) {
-      for (let tradeObj of obj.trades) {
-        var trade = new Trade(tradeObj, this._api, delegate);
-        trade._getQuote = Quote.getQuote; // Prevents circular dependency
-        trade.debug = this._debug;
-        this._trades.push(trade);
-      }
-    }
 
     this.exchangeRate = new ExchangeRate(this._api);
 
@@ -117,6 +107,10 @@ class Unocoin extends Exchange.Exchange {
 
   getSellCurrencies () {
     return Promise.resolve(this._sellCurrencies);
+  }
+
+  getTrades () {
+    return super.getTrades(Quote);
   }
 
   static new (delegate) {
