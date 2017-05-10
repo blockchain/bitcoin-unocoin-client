@@ -69,7 +69,7 @@ class Quote extends Exchange.Quote {
 
     const getQuote = (_baseAmount) => {
       var getQuote = function () {
-        return api.authPOST('trade?all');
+        return api.POST('trade?all');
       };
 
       return getQuote().then(processQuote);
