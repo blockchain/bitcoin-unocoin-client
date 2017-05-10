@@ -109,6 +109,10 @@ class Unocoin extends Exchange.Exchange {
     return Promise.resolve(this._sellCurrencies);
   }
 
+  getTrades () {
+    return super.getTrades(Quote);
+  }
+
   static new (delegate) {
     assert(delegate, 'Unocoin.new requires delegate');
     var object = {
