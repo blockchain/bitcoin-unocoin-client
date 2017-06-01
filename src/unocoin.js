@@ -77,11 +77,22 @@ class Unocoin extends Exchange.Exchange {
       });
     };
 
-    var saveMetadata = function (res) {
+    var process = function (res) {
+      switch (res.status_code) {
+        case 200:
+          return res.access_token;
+        case 724:
+          return Promise.reject({error: 'email_already_used', message: res.message});
+        default:
+          return Promise.reject(res.status_code, res.message);
+      }
+    };
+
+    var saveMetadata = function (accessToken) {
       this._user = self.delegate.email();
-      this._offlineToken = res.access_token;
+      this._offlineToken = accessToken;
       this._api._offlineToken = this._offlineToken;
-      return this._delegate.save.bind(this._delegate)().then(function () { return res; });
+      return this._delegate.save.bind(this._delegate)().then(function () { return; });
     };
 
     var getToken = function () {
@@ -91,6 +102,7 @@ class Unocoin extends Exchange.Exchange {
     return Promise.resolve().then(runChecks.bind(this))
                             .then(getToken.bind(this))
                             .then(doSignup.bind(this))
+                            .then(process.bind(this))
                             .then(saveMetadata.bind(this));
   }
 
