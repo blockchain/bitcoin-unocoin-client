@@ -161,10 +161,13 @@ class Trade extends Exchange.Trade {
 
   static fetchAll (api) {
     return api.authGET('api/v1/wallet/deposit_history').then(res => {
-      if (res.status_code === 200) {
-        return res.transactions;
-      } else {
-        return Promise.reject(res.message);
+      switch (res.status_code) {
+        case 200:
+          return res.transactions;
+        case 716: // Transaction not found (pending API fix)
+          return [];
+        default:
+          return Promise.reject(res.message);
       }
     });
   }
