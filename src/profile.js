@@ -223,16 +223,16 @@ class Profile {
   addPhoto (type, base64) {
     switch (type) {
       case 'pancard':
-        this._photos.pancard = new Photo(base64);
+        this._photos.pancard = new Photo(base64.split(',')[1]);
         break;
       case 'address':
-        this._photos.address = new Photo(base64);
+        this._photos.address = new Photo(base64.split(',')[1]);
         break;
       case 'id':
-        this._photos.id = new Photo(base64);
+        this._photos.id = new Photo(base64.split(',')[1]);
         break;
       case 'photo':
-        this._photos.photo = new Photo(base64);
+        this._photos.photo = new Photo(base64.split(',')[1]);
         break;
       default:
         assert(false, 'specify pancard, address, id or photo');
