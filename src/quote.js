@@ -55,13 +55,13 @@ class Quote extends Exchange.Quote {
       // Assuming buy:
 
       if (baseCurrency === 'INR') {
-        pseudoQuote.quoteAmount = amount / buyPrice;
+        pseudoQuote.quoteAmount = -amount / buyPrice;
         pseudoQuote.feeCurrency = 'BTC';
-        pseudoQuote.feeAmount = buyFee / buyPrice;
+        pseudoQuote.feeAmount = -Math.round(buyFee);
       } else {
-        pseudoQuote.quoteAmount = amount * buyPrice;
+        pseudoQuote.quoteAmount = -amount * buyPrice;
         pseudoQuote.feeCurrency = 'INR';
-        pseudoQuote.feeAmount = Math.round(buyFee);
+        pseudoQuote.feeAmount = -Math.round(buyFee);
       }
 
       return new Quote(pseudoQuote, api, delegate);
