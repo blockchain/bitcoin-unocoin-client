@@ -205,7 +205,6 @@ class Trade extends Exchange.Trade {
 
   getBankAccountDetails () {
     let processResult = (res) => {
-      console.log(res)
       if (res.status_code === 200) {
         return new BankAccount(res);
       } else {
