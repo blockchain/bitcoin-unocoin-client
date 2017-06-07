@@ -3,6 +3,8 @@ var assert = require('assert');
 var Exchange = require('bitcoin-exchange-client');
 var Helpers = Exchange.Helpers;
 
+var BankAccount = require('./bank-account');
+
 class Trade extends Exchange.Trade {
   constructor (obj, api, delegate) {
     super(obj, api, delegate);
@@ -210,6 +212,21 @@ class Trade extends Exchange.Trade {
       .then(processResult)
       .then(this._delegate.save.bind(this._delegate))
       .then(this.self.bind(this));
+  }
+
+  getBankAccountDetails () {
+    let processResult = (res) => {
+      console.log(res)
+      if (res.status_code === 200) {
+        return new BankAccount(res);
+      } else {
+        console.error('Failed to get bank account details', res.status_code, res.message);
+        return Promise.reject();
+      }
+    };
+
+    return this._api.authPOST('/api/v1/general/inrdepositbankaccount')
+                    .then(processResult);
   }
 
   static idFromAPI (obj) {
