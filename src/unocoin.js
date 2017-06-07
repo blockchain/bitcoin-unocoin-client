@@ -122,7 +122,9 @@ class Unocoin extends Exchange.Exchange {
   }
 
   getTrades () {
-    return super.getTrades(Quote);
+    return this.getBuyPrice().then(() => {
+      return super.getTrades(Quote);
+    });
   }
 
   getBuyQuote (amount, baseCurrency, quoteCurrency) {

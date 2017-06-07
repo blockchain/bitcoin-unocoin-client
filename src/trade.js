@@ -90,8 +90,8 @@ class Trade extends Exchange.Trade {
     this._inAmount = obj.inr * 100;
     this._sendAmount = this._inAmount;
 
-    // TODO: API support (or estimate based on ticker)
-    this._outAmount = this._inAmount / 100 / 75000 * 100000000;
+    // TODO: use (historic) price from API once available
+    this._outAmount = Math.round(this._inAmount / 100 / this._delegate.ticker.buy.price * 100000000);
     this._outAmountExpected = this._outAmount;
   }
 
