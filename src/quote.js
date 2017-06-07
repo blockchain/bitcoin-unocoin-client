@@ -28,8 +28,8 @@ class Quote extends Exchange.Quote {
 
   // Unocoin API does not have the concept of quotes. Instead, we just get the
   // latest price and wrap in a Quote object.
-  static getQuote (api, delegate, amount, baseCurrency, quoteCurrency, debug) {
-    const processQuote = (ticker) => {
+  static getQuote (api, delegate, amount, baseCurrency, quoteCurrency, debug, ticker) {
+    const process = (ticker) => {
       let pseudoQuote = {};
 
       // Some random unique UUID will do: http://stackoverflow.com/a/2117523
@@ -46,11 +46,11 @@ class Quote extends Exchange.Quote {
       pseudoQuote.baseCurrency = baseCurrency;
       pseudoQuote.quoteCurrency = quoteCurrency;
 
-      let buyPrice = ticker.buy;
+      let buyPrice = ticker.buy.price;
       pseudoQuote.baseAmount = amount;
 
-      let buyBeforeFees = ticker.buy / (1.00 + (ticker.buy_btc_fee + ticker.buy_btc_tax / 100.0) / 100.0);
-      let buyFee = ticker.buy - buyBeforeFees;
+      let buyBeforeFees = ticker.buy.price / (1.00 + (ticker.buy.fee + ticker.buy.tax / 100.0) / 100.0);
+      let buyFee = ticker.buy.price - buyBeforeFees;
 
       // Assuming buy:
 
@@ -67,12 +67,8 @@ class Quote extends Exchange.Quote {
       return new Quote(pseudoQuote, api, delegate);
     };
 
-    const getQuote = (_baseAmount) => {
-      var getQuote = function () {
-        return api.POST('trade?all');
-      };
-
-      return getQuote().then(processQuote);
+    const getQuote = function () {
+      return process(delegate.ticker);
     };
 
     return super.getQuote(amount, baseCurrency, quoteCurrency, ['BTC', 'INR'], debug)

@@ -125,6 +125,34 @@ class Unocoin extends Exchange.Exchange {
     return super.getTrades(Quote);
   }
 
+  getBuyQuote (amount, baseCurrency, quoteCurrency) {
+    return this.getBuyPrice().then(() => {
+      return super.getBuyQuote(amount, baseCurrency, quoteCurrency);
+    });
+  }
+
+  getBuyPrice () {
+    let price = () => this.delegate.ticker.buy;
+
+    let process = (res) => {
+      // Store ticker on delegate so other classes can access it
+      this.delegate.ticker = {
+        buy: {
+          price: res.buy,
+          fee: res.buy_btc_fee,
+          tax: res.buy_btc_tax
+        },
+        updatedAt: new Date()
+      };
+    };
+
+    if (this.delegate.ticker && new Date() - this.delegate.ticker.updatedAt < 60 * 1000) {
+      return Promise.resolve().then(price);
+    } else {
+      return this._api.POST('trade?all').then(process).then(price);
+    }
+  }
+
   static new (delegate) {
     assert(delegate, 'Unocoin.new requires delegate');
     var object = {
