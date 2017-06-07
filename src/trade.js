@@ -174,6 +174,10 @@ class Trade extends Exchange.Trade {
     });
   }
 
+  refresh () {
+    console.error('Not implemented');
+  }
+
   process () {
     if (['rejected', 'cancelled', 'expired'].indexOf(this.state) > -1) {
       /* istanbul ignore if */
