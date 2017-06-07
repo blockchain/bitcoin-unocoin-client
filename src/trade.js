@@ -184,17 +184,6 @@ class Trade extends Exchange.Trade {
     }
   }
 
-  refresh () {
-    /* istanbul ignore if */
-    if (this.debug) {
-      console.info('Refresh ' + this.state + ' trade ' + this.id);
-    }
-    return this._api.authGET('trades/' + this._id)
-            .then(this.setFromAPI.bind(this))
-            .then(this._delegate.save.bind(this._delegate))
-            .then(this.self.bind(this));
-  }
-
   addReferenceNumber (ref) {
     let processResult = (res) => {
       if (res.status_code === 200) {
