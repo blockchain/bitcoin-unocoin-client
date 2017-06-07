@@ -60,7 +60,7 @@ class Trade extends Exchange.Trade {
       */
       case 'Pending':
         if (obj.reference_number) {
-          this._state = 'awaiting_transfer_in';
+          this._state = 'initiated';
         } else {
           this._state = 'awaiting_reference_number';
         }
@@ -191,7 +191,7 @@ class Trade extends Exchange.Trade {
   addReferenceNumber (ref) {
     let processResult = (res) => {
       if (res.status_code === 200) {
-        this._state = 'awaiting_transfer_in';
+        this._state = 'initiated';
         return Promise.resolve();
       } else {
         console.error('Failed to set reference number', res.status_code, res.message);
