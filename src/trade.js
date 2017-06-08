@@ -90,9 +90,14 @@ class Trade extends Exchange.Trade {
     this._inAmount = obj.inr * 100;
     this._sendAmount = this._inAmount;
 
-    // TODO: use (historic) price from API once available
-    this._outAmount = Math.round(this._inAmount / 100 / this._delegate.ticker.buy.price * 100000000);
-    this._outAmountExpected = this._outAmount;
+    if (this._delegate.ticker) {
+      // TODO: use (historic) price from API once available
+      this._outAmount = Math.round(this._inAmount / 100 / this._delegate.ticker.buy.price * 100000000);
+      this._outAmountExpected = this._outAmount;
+    } else {
+      this._outAmount = null;
+      this._outAmountExpected = null;
+    }
   }
 
   get updatedAt () { return this._updatedAt; }
@@ -174,8 +179,17 @@ class Trade extends Exchange.Trade {
     });
   }
 
+  // Fetches all, but only updates the current trade
   refresh () {
-    console.error('Not implemented');
+    let self = this;
+    return Trade.fetchAll(this._api).then(res => {
+      let transaction = res.find((tx) => Trade.idFromAPI(tx) === self.id);
+      if (!transaction) {
+        console.error('Unuable to find matching transaction in result');
+        return Promise.reject('TX_NOT_FOUND');
+      }
+      self.setFromAPI(transaction);
+    });
   }
 
   process () {
