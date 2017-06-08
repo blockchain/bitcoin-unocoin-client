@@ -248,7 +248,7 @@ class Profile {
 
     return this._api.authPOST('api/v1/settings/uploaduserprofile', {
       name: this.fullName,
-      mobile: this.mobile,
+      mobile: this.mobile.replace(/\+91/g, '').replace(/ /g, ''),
       pannumber: this.pancard,
       address: this.address.street,
       state: this.address.state,
