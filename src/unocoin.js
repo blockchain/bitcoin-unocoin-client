@@ -84,7 +84,7 @@ class Unocoin extends Exchange.Exchange {
         case 724:
           return Promise.reject({error: 'email_already_used', message: res.message});
         default:
-          return Promise.reject(res.status_code, res.message);
+          return Promise.reject({error: res.status_code, message: res.message});
       }
     };
 
