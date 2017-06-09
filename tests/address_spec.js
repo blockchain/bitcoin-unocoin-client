@@ -12,11 +12,11 @@ describe('UnocoinAddress', function () {
 
   beforeEach(function () {
     aObj = {
-      street: '221B Baker Street',
-      city: 'London',
-      state: 'England',
-      zipcode: 'NW1 6XE',
-      country: 'United Kingdom'
+      street: 'Abc #1024 6th cross',
+      city: 'Bangalore',
+      state: 'Karnataka',
+      zipcode: '560011',
+      country: 'IN'
     };
     a = new Address(aObj);
   });
