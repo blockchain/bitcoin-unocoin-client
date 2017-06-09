@@ -3,68 +3,48 @@ var Exchange = require('bitcoin-exchange-client');
 var Trade = require('./trade');
 
 class Quote extends Exchange.Quote {
-  constructor (obj, api, delegate, debug) {
+  // Amount should be in Rupee or Satoshi
+  constructor (baseAmount, baseCurrency, quoteCurrency, ticker, api, delegate, debug) {
     super(api, delegate, Trade, PaymentMedium, debug);
+    // Some random unique UUID will do: http://stackoverflow.com/a/2117523
+    this._id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      let r = Math.random() * 16 | 0;
+      let v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
 
-    var expiresAt = obj.expiresAt;
+    // There's no actual expiration, just setting it to 15 minutes so that
+    // the UI refreshes it often enough.
+    this._expiresAt = new Date(new Date().getTime() + 15 * 60 * 1000);
 
-    this._id = obj.id;
-    this._baseCurrency = obj.baseCurrency;
-    this._quoteCurrency = obj.quoteCurrency;
-    this._expiresAt = expiresAt;
+    this._baseAmount = baseAmount;
+    this._baseCurrency = baseCurrency;
+    this._quoteCurrency = quoteCurrency;
 
-    this._feeCurrency = obj.feeCurrency;
+    let buyPrice = ticker.buy.price; // Price per Bitcoin
 
-    if (this._baseCurrency === 'BTC') {
-      this._baseAmount = Math.round(obj.baseAmount * 100000000);
-      this._quoteAmount = Math.round(obj.quoteAmount);
-      this._feeAmount = Math.round(obj.feeAmount);
+    // TODO: Fee calculation is probably wrong, but currently not used...
+    let buyBeforeFees = ticker.buy.price /
+          (1.00 + (ticker.buy.fee + ticker.buy.tax / 100.0) / 100.0);
+    let buyFee = ticker.buy.price - buyBeforeFees; // Fee per 1 BTC
+
+    // Assuming buy:
+    if (baseCurrency === 'INR') {
+      this._quoteAmount = Math.round(-this.baseAmount * 100000000.0 / buyPrice);
+      this._feeCurrency = 'BTC';
+      this._feeAmount = -Math.round(buyFee);
     } else {
-      this._baseAmount = Math.round(obj.baseAmount);
-      this._quoteAmount = Math.round(obj.quoteAmount * 100000000);
-      this._feeAmount = Math.round(obj.feeAmount * 100000000);
+      this._quoteAmount = Math.round(-baseAmount * buyPrice / 100000000);
+      this._feeCurrency = 'INR';
+      this._feeAmount = -Math.round(buyFee);
     }
   }
 
   // Unocoin API does not have the concept of quotes. Instead, we just get the
   // latest price and wrap in a Quote object.
-  static getQuote (api, delegate, amount, baseCurrency, quoteCurrency, debug, ticker) {
+  static getQuote (api, delegate, amount, baseCurrency, quoteCurrency, debug) {
     const process = (ticker) => {
-      let pseudoQuote = {};
-
-      // Some random unique UUID will do: http://stackoverflow.com/a/2117523
-      pseudoQuote.id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-        let r = Math.random() * 16 | 0;
-        let v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-      });
-
-      // There's no actual expiration, just setting it to 15 minutes so that
-      // the UI refreshes it often enough.
-      pseudoQuote.expiresAt = new Date(new Date().getTime() + 15 * 60 * 1000);
-
-      pseudoQuote.baseCurrency = baseCurrency;
-      pseudoQuote.quoteCurrency = quoteCurrency;
-
-      let buyPrice = ticker.buy.price;
-      pseudoQuote.baseAmount = amount;
-
-      let buyBeforeFees = ticker.buy.price / (1.00 + (ticker.buy.fee + ticker.buy.tax / 100.0) / 100.0);
-      let buyFee = ticker.buy.price - buyBeforeFees;
-
-      // Assuming buy:
-
-      if (baseCurrency === 'INR') {
-        pseudoQuote.quoteAmount = -amount / buyPrice;
-        pseudoQuote.feeCurrency = 'BTC';
-        pseudoQuote.feeAmount = -Math.round(buyFee);
-      } else {
-        pseudoQuote.quoteAmount = -amount * buyPrice;
-        pseudoQuote.feeCurrency = 'INR';
-        pseudoQuote.feeAmount = -Math.round(buyFee);
-      }
-
-      return new Quote(pseudoQuote, api, delegate);
+      return new Quote(amount, baseCurrency, quoteCurrency, ticker, api, delegate);
     };
 
     const getQuote = function () {
