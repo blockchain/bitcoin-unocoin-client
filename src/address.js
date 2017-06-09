@@ -44,7 +44,7 @@ class Address {
   }
 
   set city (val) {
-    assert(!this.readOnly, 'Ready only');
+    assert(!this.readOnly, 'Read only');
     if (this._city !== val) {
       this._dirty = true;
     }
@@ -56,7 +56,7 @@ class Address {
   }
 
   set country (val) {
-    assert(!this.readOnly, 'Ready only');
+    assert(!this.readOnly, 'Read only');
     if (this._country !== val) {
       this._dirty = true;
     }
@@ -69,7 +69,7 @@ class Address {
   }
 
   set state (val) {
-    assert(!this.readOnly, 'Ready only');
+    assert(!this.readOnly, 'Read only');
     if (this._state !== val) {
       this._dirty = true;
     }
@@ -81,7 +81,7 @@ class Address {
   }
 
   set street (val) {
-    assert(!this.readOnly, 'Ready only');
+    assert(!this.readOnly, 'Read only');
     if (this._street !== val) {
       this._dirty = true;
     }
@@ -93,7 +93,7 @@ class Address {
   }
 
   set zipcode (val) {
-    assert(!this.readOnly, 'Ready only');
+    assert(!this.readOnly, 'Read only');
     if (this._zipcode !== val) {
       this._dirty = true;
     }
