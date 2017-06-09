@@ -4,7 +4,6 @@ var Trade = require('./trade');
 var PaymentMedium = require('./payment-medium');
 var Quote = require('./quote');
 var API = require('./api');
-var Bank = require('./bank');
 
 var assert = require('assert');
 
@@ -26,8 +25,6 @@ class Unocoin extends Exchange.Exchange {
 
     this._buyCurrencies = ['INR'];
     this._sellCurrencies = ['INR'];
-
-    this._bank = new Bank(this._api, delegate);
   }
 
   get profile () {
