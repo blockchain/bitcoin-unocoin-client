@@ -8,14 +8,9 @@ let stubs = {
 
 let BankAccount = proxyquire('../src/bank-account', stubs);
 let o;
-let address;
 
 beforeEach(function () {
   JasminePromiseMatchers.install();
-
-  address = {
-    street: '221B Baker Street'
-  };
 
   o = {
     bank_name: 'State Bank of Mysore',
