@@ -6,7 +6,7 @@ let stubs = {
 
 let Address = proxyquire('../src/address', stubs);
 
-describe('UnocoinAddress', function () {
+describe('Address', function () {
   let aObj;
   let a;
 
