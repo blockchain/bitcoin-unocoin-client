@@ -1,227 +1,120 @@
 let proxyquire = require('proxyquireify')(require);
 
-let Level = obj =>
-  ({
-    name: obj.name
-  })
-;
+describe('Profile', function () {
+  let newUserObj, pendingVerificationUserObj, verifiedUserObj;
+  let api;
 
-let Limits = obj =>
-  ({
-    bank: {
-      in: obj.bank.in
-    }
-  })
-;
+  let Photo = () => {};
 
-let stubs = {
-  './level': Level,
-  './limits': Limits
-};
+  let stubs = {
+    './photo': Photo
+  };
 
-let UnocoinProfile = proxyquire('../src/profile', stubs);
+  let Profile = proxyquire('../src/profile', stubs);
 
-describe('UnocoinProfile', function () {
-  beforeEach(() => JasminePromiseMatchers.install());
-  afterEach(() => JasminePromiseMatchers.uninstall());
+  beforeEach(() => {
+    JasminePromiseMatchers.install();
 
-  describe('class', () =>
-    describe('new UnocoinProfile()', () =>
-
-      it('should keep a reference to API object', function () {
-        let api = {};
-        let p = new UnocoinProfile(api);
-        expect(p._api).toBe(api);
+    api = {
+      authGET: () => Promise.resolve({
+        status_code: 200,
+        message: 'Unverified User',
+        user_status: 1
       })
-    )
-  );
+    };
 
-  describe('instance', function () {
-    let p;
-    let unocoin;
-    let profile;
+    newUserObj = {
+      message: 'Unverified User',
+      user_status: 1
+    };
 
-    beforeEach(function () {
-      profile = {
-        name: 'John Do',
-        gender: 'male',
-        mobile: {
-          countryCode: '1',
-          number: '1234'
-        },
-        address: {
-          street: 'Hoofdstraat 1',
-          city: 'Amsterdam',
-          zipcode: '1111 AA',
-          state: 'NH',
-          country: 'NL'
-        }
-      };
-      unocoin = {
-        authGET (method) {
-          return {
-            then (cb) {
-              cb({
-                id: 1,
-                defaultCurrency: 'EUR',
-                email: 'john@do.com',
-                profile,
-                feePercentage: 3,
-                currentLimits: {
-                  bank: {
-                    in: 100
-                  }
-                },
+    pendingVerificationUserObj = {
+      user_status: 2,
+      name: 'John Do',
+      phone_number: '1234567893',
+      addobjs: 'Abc #1024 6th cross',
+      state_city_pin: 'Karnataka*Bangalore*560011',
+      pancard_number: 'BAD876G570',
+      photo: 'yes',
+      passport: 'yes',
+      pancard: 'yes',
+      adhar_dl: 'yes',
+      status: 'Verification Pending'
+    };
 
-                requirements: [],
-                level: {name: '1'},
-                nextLevel: {name: '2'}
-              });
-              return {
-                catch () {}
-              };
-            }
-          };
-        },
-        authPATCH () {}
-      };
-      spyOn(unocoin, 'authGET').and.callThrough();
-      spyOn(unocoin, 'authPATCH').and.callThrough();
-      p = new UnocoinProfile(unocoin);
+    verifiedUserObj = {
+      status: 'Verified User',
+      user_status: 3,
+      id: '206',
+      name: 'John Do',
+      phone_number: '1234567893',
+      addobjs: 'Abc #1024 6th cross',
+      state_city_pin: 'Karnataka*Bangalore*560011',
+      pancard_number: 'BAD876G570',
+      photo: 'yes',
+      passport: 'yes',
+      pancard: 'yes',
+      adhar_dl: 'yes',
+      photo_img: 'photo_1234567890.png',
+      max_buy_limit: '1000',
+      max_sell_limit: '10000',
+      user_buy_limit: 1000,
+      user_sell_limit: 10000
+    };
+  });
+
+  afterEach(() => {
+    JasminePromiseMatchers.uninstall();
+  });
+
+  describe('class', () => {
+    describe('new Profile()', () => {
+      it('should keep a reference to API object', function () {
+        let p = new Profile(newUserObj, api);
+        expect(p._api).toBe(api);
+      });
+
+      it('should process a user without any details', () => {
+        let p = new Profile(newUserObj, api);
+        expect(p.level).toEqual(1);
+      });
+
+      it('should process a user pending verification', () => {
+        let p = new Profile(pendingVerificationUserObj, api);
+        expect(p.level).toEqual(2);
+      });
+
+      it('should process a verified user', () => {
+        let p = new Profile(verifiedUserObj, api);
+        expect(p.level).toEqual(3);
+      });
     });
 
     describe('fetch()', function () {
-      it('calls /traders/me', function () {
-        p.fetch();
-        expect(unocoin.authGET).toHaveBeenCalledWith('traders/me');
+      it('calls wallet/profiledetails', done => {
+        spyOn(api, 'authGET').and.callThrough();
+
+        let checks = () => {
+          expect(api.authGET).toHaveBeenCalledWith('api/v1/wallet/profiledetails');
+        };
+
+        Profile.fetch(api).then(checks).then(done);
       });
 
-      it('populates the profile', function () {
-        p.fetch();
-        expect(p.fullName).toEqual('John Do');
-        expect(p.defaultCurrency).toEqual('EUR');
-        expect(p.email).toEqual('john@do.com');
-        expect(p.gender).toEqual('male');
-        expect(p.mobile).toEqual('+11234');
-        expect(p.city).toEqual('Amsterdam');
-        expect(p.country).toEqual('NL');
-        expect(p.state).toEqual('NH');
-        expect(p.street).toEqual('Hoofdstraat 1');
-        expect(p.zipcode).toEqual('1111 AA');
-        expect(p.level.name).toEqual('1');
-        expect(p.nextLevel.name).toEqual('2');
-        expect(p.currentLimits.bank.in).toEqual(100);
+      it('populates the profile', function (done) {
+        let checks = (p) => {
+          expect(p.level).toEqual(1);
+        };
+        Profile.fetch(api).then(checks).then(done);
       });
     });
+  });
 
-    describe('update()', () =>
-      it('should update', function () {
-        p.update({profile: {name: 'Jane Do'}});
-        expect(unocoin.authPATCH).toHaveBeenCalledWith('traders/me', {profile: { name: 'Jane Do' }});
-      })
-    );
+  describe('instance', function () {
+    // let newUserProfile;
 
-    describe('Setter', function () {
-      beforeEach(() =>
-        spyOn(p, 'update').and.callFake(values =>
-          ({
-            then (cb) {
-              if (values.profile) {
-                profile.name = values.profile.name || profile.name;
-                if (values.profile.gender !== undefined) { // can be null
-                  profile.gender = values.profile.gender;
-                }
-                if (values.profile.address) {
-                  profile.address.city = values.profile.address.city || profile.city;
-                  profile.address.country = values.profile.address.country || profile.country;
-                  profile.address.state = values.profile.address.state || profile.state;
-                  profile.address.street = values.profile.address.street || profile.street;
-                  profile.address.zipcode = values.profile.address.zipcode || profile.zipcode;
-                }
-              }
-
-              cb({profile});
-              return {
-                catch () {}
-              };
-            }
-          })
-        )
-      );
-
-      describe('setFullName', () =>
-        it('should update', function () {
-          p.setFullName('Jane Do');
-          expect(p.update).toHaveBeenCalledWith({profile: { name: 'Jane Do' }});
-          expect(p.fullName).toEqual('Jane Do');
-        })
-      );
-
-      describe('setGender', function () {
-        it('should update', function () {
-          p.setGender('female');
-          expect(p.update).toHaveBeenCalledWith({profile: { gender: 'female' }});
-          expect(p.gender).toEqual('female');
-
-          p.setGender('male');
-          expect(p.gender).toEqual('male');
-        });
-
-        it('can be unset', function () {
-          p.setGender(null);
-          expect(p.gender).toEqual(null);
-        });
-
-        it('should only accept male, female or null', function () {
-          try {
-            p.setGender('wrong');
-          } catch (e) {
-            expect(e.toString()).toEqual('AssertionError: invalid gender');
-          }
-
-          expect(p.update).not.toHaveBeenCalled();
-        });
-      });
-
-      describe('setCity', () =>
-        it('should update', function () {
-          p.setCity('London');
-          expect(p.update).toHaveBeenCalledWith({profile: {address: {city: 'London'}}});
-          expect(p.city).toEqual('London');
-        })
-      );
-
-      describe('setCountry', () =>
-        it('should update', function () {
-          p.setCountry('GB');
-          expect(p.update).toHaveBeenCalledWith({profile: {address: {country: 'GB'}}});
-          expect(p.country).toEqual('GB');
-        })
-      );
-
-      describe('setState', () =>
-        it('should update', function () {
-          p.setState('LND');
-          expect(p.update).toHaveBeenCalledWith({profile: {address: {state: 'LND'}}});
-          expect(p.state).toEqual('LND');
-        })
-      );
-
-      describe('setStreet', () =>
-        it('should update', function () {
-          p.setStreet('Main St 1');
-          expect(p.update).toHaveBeenCalledWith({profile: { address: {street: 'Main St 1'} }});
-          expect(p.street).toEqual('Main St 1');
-        })
-      );
-
-      describe('setZipcode', () =>
-        it('should update', function () {
-          p.setZipcode('1234');
-          expect(p.update).toHaveBeenCalledWith({profile: { address: {zipcode: '1234'} }});
-          expect(p.zipcode).toEqual('1234');
-        })
-      );
+    beforeEach(function () {
+      // let newUserProfile = new Profile(newUserObj);
     });
   });
 });

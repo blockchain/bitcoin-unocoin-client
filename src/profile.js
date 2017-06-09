@@ -22,54 +22,6 @@ class Profile {
       this._readOnly = true;
     }
 
-    // Unverified user:
-    // let obj = {
-    //   objult: 'notify',
-    //   message: 'Unverified User',
-    //   user_status: 1,
-    //   status_code: 200
-    // };
-
-    // Pending verification:
-    // let obj = {
-    //   objult: 'notify',
-    //   user_status: 2,
-    //   name: 'John Do',
-    //   phone_number: '1234567893',
-    //   addobjs: 'Abc #1024 6th cross',
-    //   state_city_pin: 'Karnataka*Bangalore*560011',
-    //   pancard_number: 'BAD876G570',
-    //   photo: 'yes',
-    //   passport: 'yes',
-    //   pancard: 'yes',
-    //   adhar_dl: 'yes',
-    //   status: 'Verification Pending',
-    //   status_code: 200
-    // };
-
-    // Verified user:
-    // let obj = {
-    //   objult: 'notify',
-    //   status: 'Verified User',
-    //   user_status: 3,
-    //   id: '206',
-    //   name: 'John Do',
-    //   phone_number: '1234567893',
-    //   addobjs: 'Abc #1024 6th cross',
-    //   state_city_pin: 'Karnataka*Bangalore*560011',
-    //   pancard_number: 'BAD876G570',
-    //   photo: 'yes',
-    //   passport: 'yes',
-    //   pancard: 'yes',
-    //   adhar_dl: 'yes',
-    //   photo_img: 'unocoin20170407@sprovoost.nl_photo_1491565885.png',
-    //   max_buy_limit: '1000',
-    //   max_sell_limit: '10000',
-    //   user_buy_limit: 1000,
-    //   user_sell_limit: 10000,
-    //   status_code: 200
-    // };
-
     this._full_name = obj.name || null;
 
     this._mobile = obj.phone_number ? '+91' + obj.phone_number : null;
