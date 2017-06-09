@@ -195,7 +195,6 @@ class Profile {
 
   verify () {
     assert(this.level < 2, 'Already submitted');
-    assert(this.complete, 'Missing info, always check "complete" first');
     assert(!this.readOnly, 'Profile is read-only');
 
     return this._api.authPOST('api/v1/settings/uploaduserprofile', {
@@ -210,8 +209,7 @@ class Profile {
       ifsc: this.ifsc,
       pancard_photo: this.photos.pancard.base64,
       photo: this.photos.photo.base64,
-      address_proof: this.photos.address.base64,
-      id_proof: this.photos.id.base64
+      address_proof: this.photos.address.base64
     }).then(res => {
       if (res.status_code === 200) {
         this._dirty = false;
