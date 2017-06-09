@@ -81,7 +81,7 @@ class Profile {
   }
 
   get photosComplete () {
-    return Boolean(this._photos.id && this._photos.address && this._photos.pancard && this.photos.photo);
+    return Boolean(this._photos.address && this._photos.pancard && this.photos.photo);
   }
 
   get complete () {
@@ -195,6 +195,7 @@ class Profile {
 
   verify () {
     assert(this.level < 2, 'Already submitted');
+    assert(this.complete, 'Missing info, always check "complete" first');
     assert(!this.readOnly, 'Profile is read-only');
 
     return this._api.authPOST('api/v1/settings/uploaduserprofile', {
