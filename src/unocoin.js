@@ -2,7 +2,6 @@ var Exchange = require('bitcoin-exchange-client');
 var Profile = require('./profile');
 var Trade = require('./trade');
 var PaymentMedium = require('./payment-medium');
-var ExchangeRate = require('./exchange-rate');
 var Quote = require('./quote');
 var API = require('./api');
 var Bank = require('./bank');
@@ -27,8 +26,6 @@ class Unocoin extends Exchange.Exchange {
 
     this._buyCurrencies = ['INR'];
     this._sellCurrencies = ['INR'];
-
-    this.exchangeRate = new ExchangeRate(this._api);
 
     this._bank = new Bank(this._api, delegate);
   }
