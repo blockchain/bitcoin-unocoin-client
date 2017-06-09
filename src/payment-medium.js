@@ -18,10 +18,10 @@ class PaymentMedium extends ExchangePaymentMedium {
     this._outCurrency = 'BTC';
 
     // TODO: get these from ticker
-    this._inFixedFee = 0;
-    this._outFixedFee = 0;
-    this._inPercentageFee = 0;
-    this._outPercentageFee = 0;
+    this._inFixedFee = null;
+    this._outFixedFee = null;
+    this._inPercentageFee = null;
+    this._outPercentageFee = null;
 
     this._minimumInAmounts = {
       INR: 1000

@@ -10,54 +10,19 @@ describe('PaymentMedium', () => {
   let quote;
 
   beforeEach(() => {
-    let PaymentAccount = (api, medium, quote) =>
-      ({
-        mock: 'payment-account',
-        fiatMedium: medium,
-        quote
-      })
-    ;
-
     let stubs = {
-      './payment-account': PaymentAccount
     };
 
-    let PaymentMethod = proxyquire('../src/payment-medium', stubs);
+    PaymentMethod = proxyquire('../src/payment-medium', stubs);
 
     api = {};
-    o = {
-      inMedium: 'bank',
-      outMedium: 'blockchain',
-      name: 'name',
-      inCurrencies: 'inCurrencies',
-      outCurrencies: 'outCurrencies',
-      inCurrency: 'inCurrency',
-      outCurrency: 'outCurrency',
-      inFixedFee: 0.01,
-      outFixedFee: 0,
-      inPercentageFee: 3,
-      outPercentageFee: 0
-    };
-    let sell = {
-      inMedium: 'blockchain',
-      outMedium: 'bank',
-      name: 'name',
-      inCurrencies: 'inCurrencies',
-      outCurrencies: 'outCurrencies',
-      inCurrency: 'inCurrency',
-      outCurrency: 'outCurrency',
-      inFixedFee: 0.01,
-      outFixedFee: 0,
-      inPercentageFee: 3,
-      outPercentageFee: 0
-    };
-    let sellQuote = {baseAmount: 0.5, baseCurrency: 'BTC', quoteAmount: 25000};
 
-    s = new PaymentMethod(sell, api, sellQuote);
-    return JasminePromiseMatchers.install();
+    JasminePromiseMatchers.install();
   });
 
-  afterEach(() => JasminePromiseMatchers.uninstall());
+  afterEach(() => {
+    JasminePromiseMatchers.uninstall();
+  });
 
   describe('Unocoin Payment medium', function () {
     describe('constructor', function () {
@@ -170,16 +135,6 @@ describe('PaymentMedium', () => {
           .then(testCalls)
           .then(done);
       });
-
-      it('should return {bank: ...} for sell', function (done) {
-        let promise = PaymentMethod.getAll('BTC', 'EUR', unocoin);
-
-        let testCalls = res => expect(res.bank).toBeDefined();
-
-        return promise
-          .then(testCalls)
-          .then(done);
-      });
     });
 
     describe('instance', function () {
@@ -187,17 +142,6 @@ describe('PaymentMedium', () => {
         quote = {baseAmount: -1000, baseCurrency: 'EUR', quoteAmount: 2};
         b = new PaymentMethod(o, api, quote);
       });
-
-      describe('getAccounts()', () =>
-        it('should return a dummy account', function (done) {
-          let promise = b.getAccounts().then(res =>
-            expect(res).toEqual([{
-              mock: 'payment-account', fiatMedium: 'bank', quote
-            }])
-          );
-          expect(promise).toBeResolved(done);
-        })
-      );
     });
   });
 });
