@@ -18,67 +18,28 @@ beforeEach(function () {
   };
 
   o = {
-    id: 'id',
-    account: {
-      type: 'type',
-      currency: 'currency',
-      bic: 'bic',
-      number: 'number'
-    },
-    bank: {
-      name: 'Banky McBankface',
-      address
-    },
-    holder: {
-      address
-    },
-    referenceText: 'referenceText',
-    updateTime: 'updateTime',
-    createTime: 'createTime'
+    bank_name: 'State Bank of Mysore',
+    bank_account_name: 'Unocoin Technologies Private Limited',
+    bank_account_number: '064174292872',
+    bank_ifsc_code: 'SBMY0040557',
+    bank_account_type: 'Current Account',
+    bank_branch: null
   };
 });
 
 afterEach(() => JasminePromiseMatchers.uninstall());
 
-describe('Unocoin: Bank account', function () {
+describe('Bank account', function () {
   describe('constructor', () =>
-    it('unocoin reference must be preserved', function () {
+    it('should deserialize object', function () {
       let b = new BankAccount(o);
-      expect(b._id).toBe(o.id);
-      expect(b._type).toBe(o.account.type);
-      expect(b._currency).toBe(o.account.currency);
-      expect(b._bic).toBe(o.account.bic);
-      expect(b._number).toBe(o.account.number);
+      expect(b.type).toEqual('Current Account');
+      expect(b.currency).toEqual('INR');
+      expect(b.ifsc).toEqual('SBMY0040557');
+      expect(b.number).toEqual('064174292872');
 
-      expect(b._bank_name).toBe(o.bank.name);
-      expect(b._holder_name).toBe(o.holder.name);
-      expect(b._bank_address.street).toEqual(o.bank.address.street);
-      expect(b._holder_name).toBe(o.holder.name);
-      expect(b._holder_address.street).toEqual(o.holder.address.street);
-      expect(b._referenceText).toBe(o.referenceText);
-
-      expect(b._updated_at).toBe(o.updateTime);
-      expect(b._created_at).toBe(o.createTime);
+      expect(b.bankName).toEqual('State Bank of Mysore');
+      expect(b.holderName).toEqual('Unocoin Technologies Private Limited');
     })
   );
-
-  describe('instance', function () {
-    let b;
-    beforeEach(() => {
-      b = new BankAccount(o);
-    });
-
-    it('has getters', function () {
-      expect(b.type).toBe(o.account.type);
-      expect(b.currency).toBe(o.account.currency);
-      expect(b.bic).toBe(o.account.bic);
-      expect(b.number).toBe(o.account.number);
-
-      expect(b.bankName).toBe(o.bank.name);
-      expect(b.bankAddress.street).toEqual(o.bank.address.street);
-      expect(b.holderName).toBe(o.holder.name);
-      expect(b.holderAddress.street).toEqual(o.holder.address.street);
-      expect(b.referenceText).toBe(o.referenceText);
-    });
-  });
 });
