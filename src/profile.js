@@ -105,7 +105,7 @@ class Profile {
   }
 
   set fullName (val) {
-    assert(!this.readOnly, 'Ready only');
+    assert(!this.readOnly, 'Read only');
     if (this._full_name !== val) {
       this._dirty = true;
     }
@@ -117,7 +117,7 @@ class Profile {
   }
 
   set mobile (val) {
-    assert(!this.readOnly, 'Ready only');
+    assert(!this.readOnly, 'Read only');
     if (this._mobile !== val) {
       this._dirty = true;
     }
@@ -129,7 +129,7 @@ class Profile {
   }
 
   set pancard (val) {
-    assert(!this.readOnly, 'Ready only');
+    assert(!this.readOnly, 'Read only');
     if (this._pancard_number !== val) {
       this._dirty = true;
     }
@@ -141,7 +141,7 @@ class Profile {
   }
 
   set bankAccountNumber (val) {
-    assert(!this.readOnly, 'Ready only');
+    assert(!this.readOnly, 'Read only');
     if (this._bank_account_number !== val) {
       this._dirty = true;
     }
@@ -153,7 +153,7 @@ class Profile {
   }
 
   set ifsc (val) {
-    assert(!this.readOnly, 'Ready only');
+    assert(!this.readOnly, 'Read only');
     if (this._ifsc !== val) {
       this._dirty = true;
     }
