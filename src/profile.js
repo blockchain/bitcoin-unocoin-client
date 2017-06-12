@@ -81,7 +81,7 @@ class Profile {
   }
 
   get photosComplete () {
-    return Boolean(this._photos.id && this._photos.address && this._photos.pancard && this.photos.photo);
+    return Boolean(this._photos.address && this._photos.pancard && this.photos.photo);
   }
 
   get complete () {
@@ -210,8 +210,7 @@ class Profile {
       ifsc: this.ifsc,
       pancard_photo: this.photos.pancard.base64,
       photo: this.photos.photo.base64,
-      address_proof: this.photos.address.base64,
-      id_proof: this.photos.id.base64
+      address_proof: this.photos.address.base64
     }).then(res => {
       if (res.status_code === 200) {
         this._dirty = false;
