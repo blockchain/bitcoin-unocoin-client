@@ -28,8 +28,7 @@ class Trade extends Exchange.Trade {
 
       this._is_buy = obj.is_buy;
     } else {
-      // Assume buy
-      this._is_buy = true;
+      this._is_buy = this._inCurrency === 'INR';
     }
 
     if (this._is_buy && Helpers.isPositiveInteger(this._account_index) && Helpers.isPositiveInteger(this._receive_index)) {
@@ -104,50 +103,6 @@ class Trade extends Exchange.Trade {
 
   get isBuy () {
     return this._is_buy;
-  }
-
-  cancel () {
-    var self = this;
-
-    var processCancel = function (trade) {
-      self._state = trade.state;
-
-      self._delegate.releaseReceiveAddress(self);
-
-      return self._delegate.save.bind(self._delegate)();
-    };
-
-    return self._api.authPATCH('trades/' + self._id + '/cancel').then(processCancel);
-  }
-
-  btcExpected () {
-    if (this.isBuy) {
-      if ([
-        'completed',
-        'completed_test',
-        'cancelled',
-        'failed',
-        'rejected'
-      ].indexOf(this.state) > -1) {
-        return Promise.resolve(this.outAmountExpected);
-      }
-
-      var oneMinuteAgo = new Date(new Date().getTime() - 60 * 1000);
-
-      // Estimate BTC expected based on current exchange rate:
-      if (this._lastBtcExpectedGuessAt > oneMinuteAgo) {
-        return Promise.resolve(this._lastBtcExpectedGuess);
-      } else {
-        var processQuote = (quote) => {
-          this._lastBtcExpectedGuess = quote.quoteAmount;
-          this._lastBtcExpectedGuessAt = new Date();
-          return this._lastBtcExpectedGuess;
-        };
-        return this._getQuote(this._api, this._delegate, -this.inAmount, this.inCurrency, this.outCurrency, this._debug).then(processQuote);
-      }
-    } else {
-      return Promise.reject();
-    }
   }
 
   static buy (quote, medium) {
