@@ -11,9 +11,6 @@ class PaymentMedium extends ExchangePaymentMedium {
     this._inMedium = 'bank';
     this._outMedium = 'blockchain';
 
-    this._inCurrencies = ['INR', 'BTC'];
-    this._outCurrencies = ['BTC', 'INR'];
-
     this._inCurrency = 'INR';
     this._outCurrency = 'BTC';
 
@@ -44,7 +41,7 @@ class PaymentMedium extends ExchangePaymentMedium {
     // by calling the validate_buy and profiledetails endpoints.
 
     return Profile.fetch(api).then(profile => {
-      return quote.api.authPOST('api/v1/trading/validate_buy', {
+      return api.authPOST('api/v1/trading/validate_buy', {
         // Use genesis address as placeholder
         destination: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
         amount: quote.baseCurrency === 'INR' ? -quote.baseAmount : -quote.quoteAmount
@@ -70,7 +67,6 @@ class PaymentMedium extends ExchangePaymentMedium {
   buy () {
     assert(this.checkMinimum(), 'Less than minimum buy amount');
     return super.buy().then((trade) => {
-      trade._getQuote = this._quote.constructor.getQuote; // Prevents circular dependency
       return trade;
     });
   }
