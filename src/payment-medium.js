@@ -48,9 +48,6 @@ class PaymentMedium extends ExchangePaymentMedium {
       }).then((res) => {
         switch (res.status_code) {
           case 200:
-          case 760: // Less then the required minimum amount.
-          case 782: // More than max ("Please enter minumum INR amount to deposit.")
-            // Return bank account as a type
             return Promise.resolve({bank: new PaymentMedium(undefined, api, quote, profile)});
           default:
             // TODO: wrap error message in PaymentMedium object?
