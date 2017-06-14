@@ -37,6 +37,7 @@
     "browserify-istanbul": "2.0.*",
     "coveralls": "^2.11.14",
     "eslint": "2.*",
+    "fetch-mock": "^5.11.0",
     "git-changelog": "1.0.*",
     "isomorphic-fetch": "^2.2.1",
     "jasmine-core": "^2.2.0",

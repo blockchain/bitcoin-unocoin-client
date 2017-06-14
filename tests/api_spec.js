@@ -1,5 +1,8 @@
 let proxyquire = require('proxyquireify')(require);
 
+require('isomorphic-fetch');
+let fetchMock = require('fetch-mock');
+
 let stubs = {
 };
 
@@ -69,6 +72,12 @@ describe('Unocoin API', function () {
       });
     });
 
+    describe('photoUrl', function () {
+      it('should be photos/$filename', function () {
+        expect(api.photoUrl('filename')).toEqual('https://sandbox.unocoin.co/photos/filename');
+      });
+    });
+
     describe('login', function () {
       it('should just resolve', function (done) {
         let promise = api.login();
@@ -76,8 +85,36 @@ describe('Unocoin API', function () {
       });
     });
 
+    describe('_request', () => {
+      beforeEach(function () {
+        fetchMock.get('*', {});
+      });
+
+      afterEach(() => fetchMock.restore());
+
+      it('should be logged in for authenticated requests', () => {
+        expect(() => {
+          api._request('GET', 'test-auth', {some: 'payload'}, {}, true);
+        }).not.toThrow();
+
+        expect(() => {
+          spyOn(api, 'isLoggedIn').and.returnValue(true);
+          api._request('GET', 'test-auth', {}, true);
+        }).toThrow();
+      });
+
+      it('should set Authorization header for authenticated requests', () => {
+        api._isLoggedIn = true;
+        expect(() => {
+          api._request('GET', 'test-auth', {}, true);
+        }).toThrow();
+      });
+    });
+
     describe('REST', function () {
-      beforeEach(() => spyOn(api, '_request'));
+      beforeEach(() => {
+        spyOn(api, '_request');
+      });
 
       describe('GET', () =>
         it('should make a GET request', function () {
@@ -100,6 +137,14 @@ describe('Unocoin API', function () {
           api.PATCH('/trades');
           expect(api._request).toHaveBeenCalled();
           expect(api._request.calls.argsFor(0)[0]).toEqual('PATCH');
+        })
+      );
+
+      describe('DELETE', () =>
+        it('should make a DELETE request', function () {
+          api.DELETE('/trades/1');
+          expect(api._request).toHaveBeenCalled();
+          expect(api._request.calls.argsFor(0)[0]).toEqual('DELETE');
         })
       );
 
@@ -152,6 +197,15 @@ describe('Unocoin API', function () {
             api.authPATCH('/trades');
             expect(api._request).toHaveBeenCalled();
             expect(api._request.calls.argsFor(0)[0]).toEqual('PATCH');
+            expect(api._request.calls.argsFor(0)[4]).toEqual(true);
+          })
+        );
+
+        describe('DELETE', () =>
+          it('should make a DELETE request', function () {
+            api.authDELETE('/trades/1');
+            expect(api._request).toHaveBeenCalled();
+            expect(api._request.calls.argsFor(0)[0]).toEqual('DELETE');
             expect(api._request.calls.argsFor(0)[4]).toEqual(true);
           })
         );

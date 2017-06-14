@@ -80,6 +80,10 @@ class API extends Exchange.API {
     return this._authRequest('DELETE', endpoint, data, extraHeaders);
   }
 
+  authDELETE (endpoint, data, extraHeaders) {
+    return this._authRequest('DELETE', endpoint, data, extraHeaders);
+  }
+
 }
 
 module.exports = API;
