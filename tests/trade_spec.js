@@ -44,7 +44,7 @@ describe('Trade', function () {
     // Trades stored in API:
 
     tradeJsonAPI = {
-      id: '1142',
+      order_id: '1142', // string when listing trades, integer when creating trade!
       requested_time: '2017-06-09 19:58:48',
       inr: 150000,
       reference_number: '',
@@ -55,18 +55,43 @@ describe('Trade', function () {
 
     tradeJsonAPI2 = JSON.parse(JSON.stringify(tradeJsonAPI));
     tradeJsonAPI2.id = '1143';
+
+    let response;
+    api = {
+      authGET (method) {
+        switch (method) {
+          case 'api/v1/wallet/deposit_history':
+            response = {
+              status_code: 200,
+              transactions: [tradeJsonAPI, tradeJsonAPI2]
+            };
+            return Promise.resolve(response);
+          default:
+            return Promise.reject();
+        }
+      },
+      authPOST (method) {
+        switch (method) {
+          case 'api/v1/trading/instant_buyingbtc':
+            response = {status_code: 200};
+            Object.assign(response, tradeJsonAPI);
+            // API uses integer when creating a trade, but string when listing
+            response.order_id = parseInt(response.order_id);
+            return Promise.resolve(response);
+          default:
+            return Promise.reject();
+        }
+      }
+    };
+    spyOn(api, 'authPOST').and.callThrough();
   });
 
   afterEach(() => {
     jasmine.clock().uninstall();
   });
 
-  describe('class', () =>
+  describe('class', () => {
     describe('new Trade()', function () {
-      beforeEach(function () {
-        api = {};
-      });
-
       it('should keep a reference to the API', () => {
         let t = new Trade(tradeJsonKV, api, delegate);
         expect(t._api).toBe(api);
@@ -80,45 +105,66 @@ describe('Trade', function () {
         expect(t.medium).toBe('bank');
         expect(t.state).toBe('awaiting_reference_number');
       });
-    })
-  );
+    });
+
+    describe('fetchAll()', function () {
+      beforeEach(() => spyOn(delegate, 'releaseReceiveAddress').and.callThrough());
+
+      it('should fetch all the trades', function (done) {
+        let check = function (res) {
+          expect(res.length).toBe(2);
+        };
+
+        Trade.fetchAll(api).then(check).catch(fail).then(done);
+      });
+    });
+
+    describe('buy()', function () {
+      let quote;
+
+      beforeEach(function () {
+        spyOn(Trade.prototype, '_monitorAddress').and.callFake(function () {});
+
+        quote = {
+          id: 101,
+          expiresAt: new Date(new Date().getTime() + 100000),
+          api,
+          delegate,
+          debug: true,
+          _TradeClass: Trade
+        };
+      });
+
+      it('should check that quote  is still valid', function () {
+        quote.expiresAt = new Date(new Date().getTime() - 100000);
+        expect(() => { Trade.buy(quote, 'bank'); }).toThrow();
+      });
+
+      it('should POST the quote and resolve the trade', function (done) {
+        let testTrade = function (t) {
+          expect(api.authPOST).toHaveBeenCalled();
+          expect(t.id).toEqual(1142);
+        };
+
+        Trade.buy(quote, 'bank')
+          .then(testTrade).catch(fail).then(done);
+      });
+
+      it('should watch the address', function (done) {
+        let checks = trade => expect(trade._monitorAddress).toHaveBeenCalled();
+
+        let promise = Trade.buy(quote, 'bank')
+          .then(checks);
+
+        expect(promise).toBeResolved(done);
+      });
+    });
+  });
 
   describe('instance', function () {
-    let profile;
     let trade;
 
     beforeEach(function () {
-      api = {
-        authGET (method) {
-          return Promise.resolve({
-            id: 1,
-            defaultCurrency: 'EUR',
-            email: 'john@do.com',
-            profile,
-            feePercentage: 3,
-            currentLimits: {
-              bank: {
-                in: {
-                  daily: 0,
-                  yearly: 0
-                },
-                out: {
-                  daily: 100,
-                  yearly: 1000
-                }
-              }
-            },
-
-            requirements: [],
-            level: {name: '1'},
-            nextLevel: {name: '2'},
-            state: 'awaiting_transfer_in'
-          });
-        },
-        authPOST () { return Promise.resolve('something'); }
-      };
-      spyOn(api, 'authGET').and.callThrough();
-      spyOn(api, 'authPOST').and.callThrough();
       trade = new Trade(tradeJsonKV, api, delegate);
       trade.setFromAPI(tradeJsonAPI);
     });
@@ -186,89 +232,22 @@ describe('Trade', function () {
       });
     });
 
-    xdescribe('buy()', function () {
-      let quote;
-
-      beforeEach(function () {
-        spyOn(Trade.prototype, '_monitorAddress').and.callFake(function () {});
-        api.authPOST = () => Promise.resolve(tradeJsonAPI);
-
-        quote = {
-          id: 101,
-          expiresAt: new Date(new Date().getTime() + 100000),
-          api,
-          delegate,
-          debug: true,
-          _TradeClass: Trade
-        };
-      });
-
-      it('should check that quote  is still valid', function () {
-        quote.expiresAt = new Date(new Date().getTime() - 100000);
-        expect(() => { Trade.buy(quote, 'bank'); }).toThrow();
-      });
-
-      it('should POST the quote and resolve the trade', function (done) {
-        spyOn(api, 'authPOST').and.callThrough();
-        let testTrade = function (t) {
-          expect(api.authPOST).toHaveBeenCalled();
-          expect(t.id).toEqual(1142);
-        };
-
-        let promise = Trade.buy(quote, 'bank')
-          .then(testTrade);
-
-        expect(promise).toBeResolved(done);
-      });
-
-      it('should watch the address', function (done) {
-        let checks = trade => expect(trade._monitorAddress).toHaveBeenCalled();
-
-        let promise = Trade.buy(quote, 'bank')
-          .then(checks);
-
-        expect(promise).toBeResolved(done);
-      });
-    });
-
-    xdescribe('fetchAll()', function () {
-      beforeEach(() => spyOn(delegate, 'releaseReceiveAddress').and.callThrough());
-
-      it('should fetch all the trades', function (done) {
-        api.authGET = () => Promise.resolve([tradeJsonAPI, tradeJsonAPI2]);
-
-        let check = function (res) {
-          expect(res.length).toBe(2);
-        };
-
-        Trade.fetchAll(api).then(check).catch(fail).then(done);
-      });
-    });
-
-    xdescribe('refresh()', function () {
-      beforeEach(function () {
-        api.authGET = () => Promise.resolve({});
-        spyOn(api, 'authGET').and.callThrough();
-      });
-
-      it('should authGET /trades/:id and update the trade object', function (done) {
+    describe('refresh()', function () {
+      it('should update the trade object', function (done) {
         let checks = function () {
-          expect(api.authGET).toHaveBeenCalledWith(`trades/${trade._id}`);
-          expect(trade.set).toHaveBeenCalled();
+          expect(trade.setFromAPI).toHaveBeenCalled();
         };
 
-        trade.set = () => Promise.resolve(trade);
-        spyOn(trade, 'set').and.callThrough();
+        trade.setFromAPI = () => Promise.resolve(trade);
+        spyOn(trade, 'setFromAPI').and.callThrough();
 
-        let promise = trade.refresh().then(checks);
-
-        expect(promise).toBeResolved(done);
+        trade.refresh().then(checks).catch(fail).then(done);
       });
 
       it('should save metadata', function (done) {
         let checks = () => expect(trade._delegate.save).toHaveBeenCalled();
 
-        trade.set = () => Promise.resolve(trade);
+        trade.setFromAPI = () => Promise.resolve(trade);
         spyOn(trade._delegate, 'save').and.callThrough();
         let promise = trade.refresh().then(checks);
 
@@ -278,7 +257,7 @@ describe('Trade', function () {
       it('should resolve with trade object', function (done) {
         let checks = res => expect(res).toEqual(trade);
 
-        trade.set = () => Promise.resolve(trade);
+        trade.setFromAPI = () => Promise.resolve(trade);
         let promise = trade.refresh().then(checks);
 
         expect(promise).toBeResolved(done);
