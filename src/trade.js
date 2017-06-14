@@ -137,14 +137,20 @@ class Trade extends Exchange.Trade {
   // Fetches all, but only updates the current trade
   refresh () {
     let self = this;
-    return Trade.fetchAll(this._api).then(res => {
+
+    const process = (res) => {
       let transaction = res.find((tx) => Trade.idFromAPI(tx) === self.id);
       if (!transaction) {
         console.error('Unuable to find matching transaction in result');
         return Promise.reject('TX_NOT_FOUND');
       }
       self.setFromAPI(transaction);
-    });
+    };
+
+    return Trade.fetchAll(this._api)
+      .then(process)
+      .then(this._delegate.save.bind(this._delegate))
+      .then(() => self);
   }
 
   process () {
