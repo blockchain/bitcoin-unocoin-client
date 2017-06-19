@@ -59,38 +59,11 @@ describe('PaymentMedium', () => {
       api = {
         authPOST (method, params) {
           switch (method) {
-            case 'api/v1/trading/validate_buy':
-              if (params.amount < profile.currentLimits.bank.inRemaining) {
-                return Promise.resolve({
-                  result: 'success',
-                  message: 'confirm',
-                  type: 'yes',
-                  status_code: 200
-                });
-              } else {
-                return Promise.resolve({
-                  status_code: 782,
-                  message: 'Above limit'
-                });
-              }
             default:
               return Promise.reject();
           }
         }
       };
-    });
-
-    it('should authPOST validate_buy', function (done) {
-      spyOn(api, 'authPOST').and.callThrough();
-
-      let promise = PaymentMedium.getAll('INR', 'BTC', api, quote);
-
-      let checks = () => {
-      };
-      promise
-        .then(checks)
-        .catch(fail)
-        .then(done);
     });
 
     it('should return {bank: ...} for buy', function (done) {
