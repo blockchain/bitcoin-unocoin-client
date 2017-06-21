@@ -1,6 +1,6 @@
 {
   "name": "bitcoin-unocoin-client",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Buy and sell Bitcoin using Unocoin API.",
   "repository": {
     "type": "git",
