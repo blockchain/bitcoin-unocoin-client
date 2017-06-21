@@ -84,6 +84,22 @@ class Profile {
     return Boolean(this._photos.address && this._photos.pancard && this.photos.photo);
   }
 
+  get addressComplete () {
+    return this.level > 1 || Boolean(
+      this.mobile &&
+      this.pancard &&
+      this.fullName &&
+      this.address.complete
+    );
+  }
+
+  get infoComplete () {
+    return this.level > 1 || Boolean(
+      this.ifsc &&
+      this.bankAccountNumber
+    );
+  }
+
   get complete () {
     return this.level > 1 || Boolean(
       this.photosComplete &&
