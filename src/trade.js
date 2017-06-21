@@ -64,12 +64,11 @@ class Trade extends Exchange.Trade {
           this._state = 'awaiting_reference_number';
         }
         break;
+      case 'Approved':
+        this._state = 'processing';
+        break;
       case 'Completed':
-        if (obj.transaction_hash) {
-          this._state = 'completed';
-        } else {
-          this._state = 'processing';
-        }
+        this._state = 'completed';
         break;
       default:
         this._state = 'awaiting_reference_number';
