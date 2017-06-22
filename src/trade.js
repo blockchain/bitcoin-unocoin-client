@@ -24,7 +24,6 @@ class Trade extends Exchange.Trade {
 
       this._delegate.deserializeExtraFields(obj, this);
       this._confirmed = obj.confirmed;
-      this._txHash = obj.tx_hash;
 
       this._is_buy = obj.is_buy;
     } else {
@@ -44,6 +43,7 @@ class Trade extends Exchange.Trade {
       console.info('Trade ' + this.id + ' from Unocoin API');
     }
 
+    this._txHash = obj.transaction_hash;
     this._id = this._id || Trade.idFromAPI(obj);
 
     switch (obj.status) {
