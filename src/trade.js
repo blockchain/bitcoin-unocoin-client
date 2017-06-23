@@ -88,13 +88,18 @@ class Trade extends Exchange.Trade {
     this._inAmount = obj.inr;
     this._sendAmount = this._inAmount;
 
-    if (this._delegate.ticker) {
-      // TODO: use (historic) price from API once available
-      this._outAmount = Math.round(this._inAmount / this._delegate.ticker.buy.price * 100000000);
-      this._outAmountExpected = this._outAmount;
-    } else {
-      this._outAmount = null;
-      this._outAmountExpected = null;
+    this._outAmount = null;
+    this._outAmountExpected = null;
+
+    if (obj.btc && obj.btc !== '' && obj.btc !== '0') {
+      if (this.state !== 'completed') {
+        this._outAmountExpected = parseFloat(obj.btc) * 100000000.0;
+      } else {
+        this._outAmount = parseFloat(obj.btc) * 100000000.0;
+        this._outAmountExpected = this._outAmount;
+      }
+    } else if (this._delegate.ticker) {
+      this._outAmountExpected = Math.round(this._inAmount / this._delegate.ticker.buy.price * 100000000);
     }
   }
 
