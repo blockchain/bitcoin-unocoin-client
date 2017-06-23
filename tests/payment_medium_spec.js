@@ -3,10 +3,11 @@ let proxyquire = require('proxyquireify')(require);
 describe('PaymentMedium', () => {
   let PaymentMedium;
   let o;
-  let b;
+  let p;
   let api;
   let quote;
   let profile;
+  let delegate;
 
   beforeEach(() => {
     profile = {
@@ -29,12 +30,20 @@ describe('PaymentMedium', () => {
 
     api = {};
 
+    delegate = {
+      trades: [],
+      save: () => Promise.resolve()
+    };
+
     quote = {
       baseCurrency: 'INR',
       baseAmount: -150000,
       quoteCurrency: 'BTC',
       quoteAmount: 100000000,
-      _TradeClass: {}
+      _TradeClass: {
+        buy: () => Promise.resolve({})
+      },
+      delegate: delegate
     };
 
     JasminePromiseMatchers.install();
@@ -46,11 +55,16 @@ describe('PaymentMedium', () => {
 
   describe('constructor', function () {
     it('must put everything on place', function () {
-      b = new PaymentMedium(o, api, quote, profile);
-      expect(b.inMedium).toEqual('bank');
-      expect(b.outMedium).toEqual('blockchain');
-      expect(b.inCurrency).toEqual('INR');
-      expect(b.outCurrency).toEqual('BTC');
+      p = new PaymentMedium(o, api, quote, profile);
+      expect(p.inMedium).toEqual('bank');
+      expect(p.outMedium).toEqual('blockchain');
+      expect(p.inCurrency).toEqual('INR');
+      expect(p.outCurrency).toEqual('BTC');
+    });
+
+    it('should work without quote', function () {
+      p = new PaymentMedium(null, api, null, profile);
+      expect(p.inMedium).toEqual('bank');
     });
   });
 
@@ -97,8 +111,24 @@ describe('PaymentMedium', () => {
 
   describe('instance', function () {
     beforeEach(function () {
-      quote = {baseAmount: -1000, baseCurrency: 'EUR', quoteAmount: 2};
-      b = new PaymentMedium(o, api, quote);
+      p = new PaymentMedium(o, api, quote, profile);
+    });
+
+    describe('checkMinimum', () => {
+      it('should check baseAmount against minimumInAmounts', () => {
+        expect(p.checkMinimum()).toEqual(true);
+
+        p._quote.baseAmount = -999;
+        expect(p.checkMinimum()).toEqual(false);
+      });
+    });
+
+    describe('buy()', () => {
+      it('should check the minimum amount', (done) => {
+        spyOn(p, 'checkMinimum').and.callThrough();
+        p.buy().catch(fail).then(done);
+        expect(p.checkMinimum).toHaveBeenCalled();
+      });
     });
   });
 });
