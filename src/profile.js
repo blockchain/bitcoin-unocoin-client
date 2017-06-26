@@ -186,20 +186,17 @@ class Profile {
 
   addPhoto (type, base64) {
     switch (type) {
-      case 'pancard':
-        this._photos.pancard = new Photo(base64.split(',')[1]);
-        break;
       case 'address':
-        this._photos.address = new Photo(base64.split(',')[1]);
+        this._photos.address = new Photo(base64);
         break;
-      case 'id':
-        this._photos.id = new Photo(base64.split(',')[1]);
+      case 'pancard':
+        this._photos.pancard = new Photo(base64);
         break;
       case 'photo':
-        this._photos.photo = new Photo(base64.split(',')[1]);
+        this._photos.photo = new Photo(base64);
         break;
       default:
-        assert(false, 'specify pancard, address, id or photo');
+        assert(false, 'specify address, pancard or photo');
         break;
     }
     this._dirty = true;
@@ -220,9 +217,9 @@ class Profile {
       pincode: this.address.zipcode,
       bank_accnum: this.bankAccountNumber,
       ifsc: this.ifsc,
-      pancard_photo: this.photos.pancard.base64,
-      photo: this.photos.photo.base64,
-      address_proof: this.photos.address.base64
+      pancard_photo: this.photos.pancard.base64.split(',')[1],
+      photo: this.photos.photo.base64.split(',')[1],
+      address_proof: this.photos.address.base64.split(',')[1]
     };
 
     return this._api.authPOST('api/v1/settings/uploaduserprofile', payload).then(res => {
