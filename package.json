@@ -69,6 +69,7 @@
       "JasminePromiseMatchers",
       "jasmine",
       "spyOn",
+      "spyOnProperty",
       "pending",
       "fail"
     ]
