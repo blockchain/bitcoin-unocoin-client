@@ -243,7 +243,7 @@ class Profile {
   }
 
   static fetch (api) {
-    return api.authGET('api/v1/wallet/profiledetails').then(function (res) {
+    return api.authGET('api/v1/wallet/profiledetails').then(res => {
       if (res.status_code === 200) {
         return new Profile(res, api);
       } else {

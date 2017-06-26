@@ -131,19 +131,15 @@ class Unocoin extends Exchange.Exchange {
     let price = () => this.delegate.ticker.buy;
 
     let process = (res) => {
-      if (res.status_code === 200) {
-        // Store ticker on delegate so other classes can access it
-        this.delegate.ticker = {
-          buy: {
-            price: res.buy,
-            fee: res.buy_btc_fee,
-            tax: res.buy_btc_tax
-          },
-          updatedAt: new Date()
-        };
-      } else {
-        return Promise.reject(res.message);
-      }
+      // Store ticker on delegate so other classes can access it
+      this.delegate.ticker = {
+        buy: {
+          price: res.buy,
+          fee: res.buy_btc_fee,
+          tax: res.buy_btc_tax
+        },
+        updatedAt: new Date()
+      };
     };
 
     if (this.delegate.ticker && new Date() - this.delegate.ticker.updatedAt < 60 * 1000) {
