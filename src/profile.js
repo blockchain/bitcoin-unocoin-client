@@ -102,13 +102,9 @@ class Profile {
 
   get complete () {
     return this.level > 1 || Boolean(
+      this.addressComplete &&
       this.photosComplete &&
-      this.address.complete &&
-      this.fullName &&
-      this.mobile &&
-      this.pancard &&
-      this.bankAccountNumber &&
-      this.ifsc
+      this.infoComplete
     );
   }
 
