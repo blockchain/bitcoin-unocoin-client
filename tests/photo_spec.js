@@ -11,15 +11,22 @@ describe('Photo', function () {
   let api;
 
   beforeEach(function () {
-    api = {};
+    api = {
+      photoUrl: fileName => `unocoin.com/${fileName}`
+    };
   });
 
-  describe('class', () =>
-    describe('new Photo()', () =>
-      it('should construct an Photo', function () {
+  describe('class', () => {
+    describe('new Photo()', () => {
+      it('should construct an Photo', () => {
         photo = new Photo('base64', api);
         expect(photo.base64).toEqual('base64');
-      })
-    )
-  );
+      });
+
+      it('should store URL if filename is provided', () => {
+        photo = new Photo('base64', api, 'somefile.jpeg');
+        expect(photo.url).toEqual('unocoin.com/somefile.jpeg');
+      });
+    });
+  });
 });
