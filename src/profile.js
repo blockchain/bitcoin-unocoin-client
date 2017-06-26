@@ -84,7 +84,7 @@ class Profile {
     return Boolean(this._photos.address && this._photos.pancard && this.photos.photo);
   }
 
-  get addressComplete () {
+  get identityComplete () {
     return this.level > 1 || Boolean(
       this.mobile &&
       this.pancard &&
@@ -93,7 +93,7 @@ class Profile {
     );
   }
 
-  get infoComplete () {
+  get bankInfoComplete () {
     return this.level > 1 || Boolean(
       this.ifsc &&
       this.bankAccountNumber
@@ -103,12 +103,8 @@ class Profile {
   get complete () {
     return this.level > 1 || Boolean(
       this.photosComplete &&
-      this.address.complete &&
-      this.fullName &&
-      this.mobile &&
-      this.pancard &&
-      this.bankAccountNumber &&
-      this.ifsc
+      this.identityComplete &&
+      this.bankInfoComplete
     );
   }
 
@@ -214,7 +210,7 @@ class Profile {
     assert(this.complete, 'Missing info, always check "complete" first');
     assert(!this.readOnly, 'Profile is read-only');
 
-    return this._api.authPOST('api/v1/settings/uploaduserprofile', {
+    let payload = {
       name: this.fullName,
       mobile: this.mobile.replace(/\+91/g, '').replace(/ /g, ''),
       pannumber: this.pancard,
@@ -227,7 +223,9 @@ class Profile {
       pancard_photo: this.photos.pancard.base64,
       photo: this.photos.photo.base64,
       address_proof: this.photos.address.base64
-    }).then(res => {
+    };
+
+    return this._api.authPOST('api/v1/settings/uploaduserprofile', payload).then(res => {
       if (res.status_code === 200) {
         this._dirty = false;
         this._address.didSave();
