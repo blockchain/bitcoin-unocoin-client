@@ -155,16 +155,6 @@ class Trade extends Exchange.Trade {
       .then(() => self);
   }
 
-  process () {
-    if (['rejected', 'cancelled', 'expired'].indexOf(this.state) > -1) {
-      /* istanbul ignore if */
-      if (this.debug) {
-        console.info('Check if address for ' + this.state + ' trade ' + this.id + ' can be released');
-      }
-      this._delegate.releaseReceiveAddress(this);
-    }
-  }
-
   addReferenceNumber (ref) {
     let processResult = (res) => {
       if (res.status_code === 200) {
