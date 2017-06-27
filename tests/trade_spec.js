@@ -411,6 +411,14 @@ describe('Trade', function () {
 
         expect(promise).toBeResolved(done);
       });
+
+      it('should reject if no matching trade is found', (done) => {
+        spyOn(Trade, 'idFromAPI').and.returnValue('no match');
+
+        let checks = res => expect(res).toEqual('TX_NOT_FOUND');
+
+        trade.refresh().then(fail).catch(checks).then(done);
+      });
     });
   });
 });
