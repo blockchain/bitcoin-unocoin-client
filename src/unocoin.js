@@ -37,8 +37,6 @@ class Unocoin extends Exchange.Exchange {
 
   get sellCurrencies () { return this._sellCurrencies; }
 
-  get bank () { return this._bank; }
-
   toJSON () {
     var unocoin = {
       user: this._user,
