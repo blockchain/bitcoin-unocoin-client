@@ -103,8 +103,6 @@ class Trade extends Exchange.Trade {
     }
   }
 
-  get updatedAt () { return this._updatedAt; }
-
   get isBuy () {
     return this._is_buy;
   }
