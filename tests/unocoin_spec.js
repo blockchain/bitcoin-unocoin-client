@@ -116,6 +116,12 @@ describe('Unocoin', function () {
               access_token: 'offline-token'
             });
           }
+        } if (endpoint === 'trade?all') {
+          return Promise.resolve({
+            buy: 75000,
+            buy_btc_fee: 1,
+            buy_btc_tax: 15
+          });
         } else {
           return Promise.reject('Unknown endpoint: ' + endpoint);
         }
@@ -322,6 +328,25 @@ describe('Unocoin', function () {
           expect(Quote.getQuote).toHaveBeenCalled();
         };
         c.getBuyQuote(1000, 'INR', 'BTC').then(checks).catch(fail).then(done);
+      });
+    });
+
+    describe('getTicker()', () => {
+      it('should set the ticker on the delegate', (done) => {
+        let checks = () => {
+          expect(c.delegate.ticker).toBeDefined();
+          expect(c.delegate.ticker.buy.price).toEqual(75000);
+        };
+        c.getTicker().then(checks).catch(fail).then(done);
+      });
+
+      it('should cache the result for a while', (done) => {
+        let checks = () => {
+          expect(api.POST.calls.count()).toEqual(1);
+        };
+        c.getTicker().then(() => {
+          return c.getTicker();
+        }).then(checks).catch(fail).then(done);
       });
     });
   });
