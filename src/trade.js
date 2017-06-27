@@ -180,7 +180,7 @@ class Trade extends Exchange.Trade {
         return new BankAccount(res);
       } else {
         console.error('Failed to get bank account details', res.status_code, res.message);
-        return Promise.reject();
+        return Promise.reject(res.message);
       }
     };
 

@@ -102,6 +102,16 @@ describe('Trade', function () {
           case 'api/v1/wallet/add_reference':
             response = {status_code: 200};
             return Promise.resolve(response);
+          case '/api/v1/general/inrdepositbankaccount':
+            response = {
+              status_code: 200,
+              bank_account_type: 'Checking',
+              bank_ifsc_code: '1234',
+              bank_account_number: '5678',
+              bank_name: 'Bank of India',
+              bank_account_name: 'Unocoin'
+            };
+            return Promise.resolve(response);
           default:
             return Promise.reject();
         }
@@ -458,6 +468,24 @@ describe('Trade', function () {
         let checks = res => expect(res).toEqual('FAIL');
 
         trade.addReferenceNumber().then(fail).catch(checks).then(done);
+      });
+    });
+
+    describe('getBankAccountDetails()', () => {
+      it('should return bank details', done => {
+        let checks = function (res) {
+          expect(res).toEqual({mock: 'bank-account'});
+        };
+
+        trade.getBankAccountDetails().then(checks).catch(fail).then(done);
+      });
+
+      it('should reject if server returns error', (done) => {
+        api.shouldFail('/api/v1/general/inrdepositbankaccount');
+
+        let checks = res => expect(res).toEqual('FAIL');
+
+        trade.getBankAccountDetails().then(fail).catch(checks).then(done);
       });
     });
   });
