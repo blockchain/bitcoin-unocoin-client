@@ -28,7 +28,10 @@ describe('Trade', function () {
       removeLabeledAddress () {},
       releaseReceiveAddress () {},
       save () { return Promise.resolve(); },
-      deserializeExtraFields () {},
+      deserializeExtraFields (obj, trade) {
+        trade._receive_index = 0;
+        trade._account_index = 0;
+      },
       getReceiveAddress () {},
       serializeExtraFields () {},
       monitorAddress () {}
@@ -92,18 +95,26 @@ describe('Trade', function () {
 
   describe('class', () => {
     describe('new Trade()', function () {
+      let t;
+
       it('should keep a reference to the API', () => {
-        let t = new Trade(tradeJsonKV, api, delegate);
+        t = new Trade(tradeJsonKV, api, delegate);
         expect(t._api).toBe(api);
       });
 
       it('should deserialize from KV store (not API)', () => {
-        let t = new Trade(tradeJsonKV, api, delegate);
+        t = new Trade(tradeJsonKV, api, delegate);
         expect(t.id).toBe(tradeJsonKV.id);
         expect(t.inCurrency).toBe('INR');
         expect(t.outCurrency).toBe('BTC');
         expect(t.medium).toBe('bank');
         expect(t.state).toBe('awaiting_reference_number');
+      });
+
+      it('should ask the delegate to deserialize extra fields', () => {
+        spyOn(delegate, 'deserializeExtraFields');
+        t = new Trade(tradeJsonKV, api, delegate);
+        expect(delegate.deserializeExtraFields).toHaveBeenCalled();
       });
     });
 
@@ -172,7 +183,6 @@ describe('Trade', function () {
     describe('setFromAPI', () => {
       let t;
       beforeEach(() => {
-        spyOn(delegate, 'deserializeExtraFields');
         t = new Trade(tradeJsonKV, api, delegate);
         t.setFromAPI(tradeJsonAPI);
       });
@@ -182,8 +192,72 @@ describe('Trade', function () {
         expect(t.inAmount).toEqual(150000);
       });
 
-      it('should ask the delegate to deserialize extra fields', () => {
-        expect(delegate.deserializeExtraFields).toHaveBeenCalled();
+      it('should map Pending status to "awaiting_reference_number" state if no ref number is set', () => {
+        tradeJsonAPI.status = 'Pending';
+        tradeJsonAPI.reference_number = undefined;
+        t.setFromAPI(tradeJsonAPI);
+        expect(t.state).toBe('awaiting_reference_number');
+      });
+
+      it('should map Pending status to "awaiting_transfer_in" state if ref number is set', () => {
+        tradeJsonAPI.status = 'Pending';
+        tradeJsonAPI.reference_number = '1234';
+        t.setFromAPI(tradeJsonAPI);
+        expect(t.state).toBe('awaiting_transfer_in');
+      });
+
+      it('should map Approved status to "processing" state', () => {
+        tradeJsonAPI.status = 'Approved';
+        t.setFromAPI(tradeJsonAPI);
+        expect(t.state).toBe('processing');
+      });
+
+      it('should map Completed status to "completed" state', () => {
+        tradeJsonAPI.status = 'Completed';
+        t.setFromAPI(tradeJsonAPI);
+        expect(t.state).toBe('completed');
+      });
+
+      it('should fall back to "awaiting_reference_number" for unknown state', () => {
+        tradeJsonAPI.status = 'Surprise';
+        t.setFromAPI(tradeJsonAPI);
+        expect(t.state).toBe('awaiting_reference_number');
+      });
+
+      it('should use unixtime field when creating new trade', () => {
+        tradeJsonAPI.unixtime = 1498570709;
+        tradeJsonAPI.requested_time = undefined;
+        t.setFromAPI(tradeJsonAPI);
+        expect(t.createdAt).toEqual(new Date(1498570709 * 1000));
+      });
+
+      it('should warn if creation time is missing', () => {
+        tradeJsonAPI.unixtime = undefined;
+        tradeJsonAPI.requested_time = undefined;
+        spyOn(window.console, 'warn');
+        t.setFromAPI(tradeJsonAPI);
+        expect(window.console.warn).toHaveBeenCalled();
+      });
+
+      it('should use btc value as outAmountExpected before completed', () => {
+        tradeJsonAPI.btc = '1.0';
+        t.setFromAPI(tradeJsonAPI);
+        expect(t.outAmountExpected).toEqual(100000000);
+        expect(t.outAmount).toEqual(null);
+      });
+
+      it('should use btc value as outAmount once completed', () => {
+        tradeJsonAPI.btc = '1.0';
+        tradeJsonAPI.status = 'Completed';
+        t.setFromAPI(tradeJsonAPI);
+        expect(t.outAmount).toEqual(100000000);
+      });
+
+      it('should use ticker if btc field is missing or 0', () => {
+        tradeJsonAPI.btc = undefined;
+        t._delegate.ticker = {buy: {price: 75000}};
+        t.setFromAPI(tradeJsonAPI);
+        expect(t.outAmountExpected).toEqual(200000000);
       });
     });
 
