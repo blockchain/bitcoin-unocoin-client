@@ -3,18 +3,19 @@ let proxyquire = require('proxyquireify')(require);
 describe('Unocoin', function () {
   let c;
 
-  const API = () =>
-    ({
-      authGET: () => Promise.resolve(),
-      authPOST: () => Promise.resolve(),
-      POST: () => Promise.resolve()
-    })
-  ;
+  let api = {
+    authGET: () => Promise.resolve(),
+    authPOST: () => Promise.resolve(),
+    POST: () => Promise.resolve()
+  };
+
+  const API = () => api;
 
   let Trade = obj => obj;
 
   Trade.monitorPayments = function () {};
   Trade.filteredTrades = trades => [];
+  Trade.fetchAll = () => Promise.resolve([]);
 
   let UnocoinProfile = {
     fetch: () => Promise.resolve({})
@@ -47,8 +48,8 @@ describe('Unocoin', function () {
   describe('class', function () {
     describe('new Unocoin()', function () {
       it('should transform an Object to a Unocoin', function () {
-        // c = new Unocoin({auto_login: true}, delegate);
-        // expect(c.constructor.name).toEqual('Unocoin');
+        c = new Unocoin({auto_login: true}, delegate);
+        expect(c.constructor.name).toEqual('Unocoin');
       });
 
       it('should use fields', function () {
@@ -90,7 +91,7 @@ describe('Unocoin', function () {
       });
       c._debug = false;
 
-      return spyOn(c._api, 'POST').and.callFake(function (endpoint, data) {
+      spyOn(c._api, 'POST').and.callFake(function (endpoint, data) {
         if (endpoint === 'api/v1/authentication/register') {
           if (data.email_id === 'duplicate@blockchain.com') {
             return Promise.resolve({
@@ -109,7 +110,7 @@ describe('Unocoin', function () {
             });
           }
         } else {
-          return Promise.reject('Unknown endpoint');
+          return Promise.reject('Unknown endpoint: ' + endpoint);
         }
       });
     });
@@ -279,6 +280,23 @@ describe('Unocoin', function () {
           expect(c.profile).not.toBeNull();
         };
         c.fetchProfile().then(checks).then(done);
+      });
+    });
+
+    describe('getTrades()', () => {
+      it('should call getTicker() first', () => {
+        spyOn(c, 'getTicker').and.callFake(() => Promise.resolve());
+        c.getTrades();
+        expect(c.getTicker).toHaveBeenCalled();
+      });
+
+      it('should fetch /trades', (done) => {
+        spyOn(c, 'getTicker').and.callFake(() => Promise.resolve());
+        spyOn(Trade, 'fetchAll').and.callThrough();
+        let checks = () => {
+          expect(Trade.fetchAll).toHaveBeenCalled();
+        };
+        c.getTrades().then(checks).catch(fail).then(done);
       });
     });
   });
