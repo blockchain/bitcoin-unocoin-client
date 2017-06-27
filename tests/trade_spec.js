@@ -64,10 +64,16 @@ describe('Trade', function () {
     let _shouldFail = {};
 
     api = {
-      shouldFail (method) {
-        _shouldFail[method] = true;
+      shouldFail (method, code) {
+        _shouldFail[method] = code || true;
       },
       authGET (method) {
+        if (_shouldFail[method]) {
+          return Promise.resolve({
+            status_code: _shouldFail[method] || 500,
+            message: 'FAIL'
+          });
+        }
         switch (method) {
           case 'api/v1/wallet/deposit_history':
             response = {
@@ -139,6 +145,26 @@ describe('Trade', function () {
         };
 
         Trade.fetchAll(api).then(check).catch(fail).then(done);
+      });
+
+      it('should replace 716 error with empty array', done => {
+        api.shouldFail('api/v1/wallet/deposit_history', 716);
+
+        let check = function (res) {
+          expect(res).toEqual([]);
+        };
+
+        Trade.fetchAll(api).then(check).catch(fail).then(done);
+      });
+
+      it('should return the message for other erros', done => {
+        api.shouldFail('api/v1/wallet/deposit_history');
+
+        let check = function (res) {
+          expect(res).toEqual('FAIL');
+        };
+
+        Trade.fetchAll(api).then(fail).catch(check).then(done);
       });
     });
 
