@@ -197,7 +197,6 @@ class Profile {
         break;
       default:
         assert(false, 'specify address, pancard or photo');
-        break;
     }
     this._dirty = true;
   }

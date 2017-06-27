@@ -310,6 +310,30 @@ describe('Profile', function () {
         });
       });
     });
+
+    describe('addPhoto', () => {
+      it('should create a photo object', () => {
+        profile.addPhoto('address', 'abc');
+        expect(profile._photos.address).toBeDefined();
+      });
+
+      it('should support address, pandcard and photo', () => {
+        profile.addPhoto('address', 'abc');
+        expect(profile._photos.address).toBeDefined();
+
+        profile.addPhoto('pancard', 'abc');
+        expect(profile._photos.pancard).toBeDefined();
+
+        profile.addPhoto('photo', 'abc');
+        expect(profile._photos.photo).toBeDefined();
+      });
+
+      it('should fail for unknown photo type', () => {
+        expect(() => {
+          profile.addPhoto('unknown', 'abc');
+        }).toThrow();
+      });
+    });
   });
 
   describe('level 2', () => {
