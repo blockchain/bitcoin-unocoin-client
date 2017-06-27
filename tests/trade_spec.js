@@ -60,7 +60,13 @@ describe('Trade', function () {
     tradeJsonAPI2.id = '1143';
 
     let response;
+
+    let _shouldFail = {};
+
     api = {
+      shouldFail (method) {
+        _shouldFail[method] = true;
+      },
       authGET (method) {
         switch (method) {
           case 'api/v1/wallet/deposit_history':
@@ -74,6 +80,12 @@ describe('Trade', function () {
         }
       },
       authPOST (method) {
+        if (_shouldFail[method]) {
+          return Promise.resolve({
+            status_code: 500,
+            message: 'FAIL'
+          });
+        }
         switch (method) {
           case 'api/v1/trading/instant_buyingbtc':
             response = {status_code: 200};
@@ -138,6 +150,10 @@ describe('Trade', function () {
 
         quote = {
           id: 101,
+          baseAmount: -150000,
+          baseCurrency: 'INR',
+          quoteAmount: 1,
+          quoteCurrency: 'BTC',
           expiresAt: new Date(new Date().getTime() + 100000),
           api,
           delegate,
@@ -159,6 +175,39 @@ describe('Trade', function () {
 
         Trade.buy(quote, 'bank')
           .then(testTrade).catch(fail).then(done);
+      });
+
+      it('should return the error upon failure', (done) => {
+        api.shouldFail('api/v1/trading/instant_buyingbtc');
+
+        let checks = (message) => {
+          expect(message).toEqual('FAIL');
+        };
+
+        Trade.buy(quote, 'bank').then(fail).catch(checks).then(done);
+      });
+
+      it('should use quote baseAmount if baseCurrency is INR', (done) => {
+        let checks = function (t) {
+          expect(api.authPOST.calls.argsFor(0)[1].amount).toEqual(150000);
+        };
+
+        Trade.buy(quote, 'bank')
+          .then(checks).catch(fail).then(done);
+      });
+
+      it('should use quote quoteAmount if baseCurrency is BTC', (done) => {
+        quote.baseAmount = -1;
+        quote.baseCurrency = 'BTC';
+        quote.quoteAmount = 150000;
+        quote.quoteCurrency = 'INR';
+
+        let checks = function (t) {
+          expect(api.authPOST.calls.argsFor(0)[1].amount).toEqual(150000);
+        };
+
+        Trade.buy(quote, 'bank')
+          .then(checks).catch(fail).then(done);
       });
 
       it('should watch the address', function (done) {
