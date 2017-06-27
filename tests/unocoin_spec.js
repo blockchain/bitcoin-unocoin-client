@@ -28,11 +28,18 @@ describe('Unocoin', function () {
 
   let ExchangeDelegate = () => delegate;
 
+  class Quote {
+    static getQuote () {
+      return Promise.resolve();
+    }
+  }
+
   let stubs = {
     './api': API,
     './trade': Trade,
     './profile': UnocoinProfile,
-    './exchange-delegate': ExchangeDelegate
+    './exchange-delegate': ExchangeDelegate,
+    './quote': Quote
   };
 
   let Unocoin = proxyquire('../src/unocoin', stubs);
@@ -297,6 +304,24 @@ describe('Unocoin', function () {
           expect(Trade.fetchAll).toHaveBeenCalled();
         };
         c.getTrades().then(checks).catch(fail).then(done);
+      });
+    });
+
+    describe('getBuyQuote()', () => {
+      it('should call getTicker() first', () => {
+        spyOn(c, 'getTicker').and.callFake(() => Promise.resolve());
+        c.getBuyQuote(1000, 'INR', 'BTC');
+        expect(c.getTicker).toHaveBeenCalled();
+      });
+
+      it('should get a quote', (done) => {
+        c._ticker = {buy: 1000};
+        spyOn(c, 'getTicker').and.callFake(() => Promise.resolve());
+        spyOn(Quote, 'getQuote').and.callThrough();
+        let checks = () => {
+          expect(Quote.getQuote).toHaveBeenCalled();
+        };
+        c.getBuyQuote(1000, 'INR', 'BTC').then(checks).catch(fail).then(done);
       });
     });
   });
