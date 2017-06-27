@@ -99,6 +99,9 @@ describe('Trade', function () {
             // API uses integer when creating a trade, but string when listing
             response.order_id = parseInt(response.order_id);
             return Promise.resolve(response);
+          case 'api/v1/wallet/add_reference':
+            response = {status_code: 200};
+            return Promise.resolve(response);
           default:
             return Promise.reject();
         }
@@ -418,6 +421,43 @@ describe('Trade', function () {
         let checks = res => expect(res).toEqual('TX_NOT_FOUND');
 
         trade.refresh().then(fail).catch(checks).then(done);
+      });
+    });
+
+    describe('addReferenceNumber()', () => {
+      beforeEach(() => {
+        trade._reference_number = undefined;
+      });
+
+      it('should update the trade object', done => {
+        let checks = function () {
+          expect(trade.state).toEqual('awaiting_transfer_in');
+        };
+
+        trade.addReferenceNumber('1234').then(checks).catch(fail).then(done);
+      });
+
+      it('should save metadata', done => {
+        let checks = () => expect(trade._delegate.save).toHaveBeenCalled();
+
+        spyOn(trade._delegate, 'save').and.callThrough();
+        trade.addReferenceNumber('1234').then(checks).catch(fail).then(done);
+      });
+
+      it('should resolve with trade object', done => {
+        let checks = res => expect(res).toEqual(trade);
+
+        let promise = trade.addReferenceNumber('1234').then(checks);
+
+        expect(promise).toBeResolved(done);
+      });
+
+      it('should reject if server returns error', (done) => {
+        api.shouldFail('api/v1/wallet/add_reference');
+
+        let checks = res => expect(res).toEqual('FAIL');
+
+        trade.addReferenceNumber().then(fail).catch(checks).then(done);
       });
     });
   });

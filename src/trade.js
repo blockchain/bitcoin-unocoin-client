@@ -162,7 +162,7 @@ class Trade extends Exchange.Trade {
         return Promise.resolve();
       } else {
         console.error('Failed to set reference number', res.status_code, res.message);
-        return Promise.reject();
+        return Promise.reject(res.message);
       }
     };
     return this._api.authPOST('api/v1/wallet/add_reference', {
