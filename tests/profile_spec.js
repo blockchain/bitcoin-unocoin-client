@@ -15,23 +15,38 @@ describe('Profile', function () {
   beforeEach(() => {
     JasminePromiseMatchers.install();
 
+    let _shouldFail = {};
+
     api = {
-      authGET: () => Promise.resolve({
-        status_code: 200,
-        message: 'Unverified User',
-        user_status: 1
-      }),
-      authPOST: (method, payload) => {
-        if (payload.name !== 'Should Fail') {
-          return Promise.resolve({
-            status_code: 200,
-            user_status: 2
-          });
-        } else {
+      shouldFail: (method) => {
+        _shouldFail[method] = true;
+      },
+      authGET: (method) => {
+        if (_shouldFail[method]) {
           return Promise.resolve({
             status_code: 714,
             user_status: 2,
             message: 'FAIL'
+          });
+        } else {
+          return Promise.resolve({
+            status_code: 200,
+            message: 'Unverified User',
+            user_status: 1
+          });
+        }
+      },
+      authPOST: (method) => {
+        if (_shouldFail[method]) {
+          return Promise.resolve({
+            status_code: 714,
+            user_status: 2,
+            message: 'FAIL'
+          });
+        } else {
+          return Promise.resolve({
+            status_code: 200,
+            user_status: 2
           });
         }
       }
@@ -113,6 +128,17 @@ describe('Profile', function () {
         };
 
         Profile.fetch(api).then(checks).then(done);
+      });
+
+      it('should return error message if it fails', done => {
+        api.shouldFail('api/v1/wallet/profiledetails');
+        spyOn(api, 'authGET').and.callThrough();
+
+        let checks = (res) => {
+          expect(res).toEqual('FAIL');
+        };
+
+        Profile.fetch(api).then(fail).catch(checks).then(done);
       });
 
       it('populates the profile', function (done) {
@@ -256,7 +282,7 @@ describe('Profile', function () {
 
       describe('fails', () => {
         beforeEach(() => {
-          profile.fullName = 'Should Fail';
+          api.shouldFail('api/v1/settings/uploaduserprofile');
         });
 
         it('should return the error message', (done) => {
