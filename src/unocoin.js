@@ -64,7 +64,7 @@ class Unocoin extends Exchange.Exchange {
 
     var doSignup = function (emailToken) {
       assert(emailToken, 'email token missing');
-      return this._api.POST('api/v1/authentication/register', {
+      return this._api.POST('api/blockchain-v1/authentication/register', {
         email_id: self.delegate.email()
       }, {
         Authorization: `Bearer ${emailToken}`
@@ -145,7 +145,7 @@ class Unocoin extends Exchange.Exchange {
     if (this.delegate.ticker && new Date() - this.delegate.ticker.updatedAt < 60 * 1000) {
       return Promise.resolve().then(price);
     } else {
-      return this._api.POST('trade?all').then(process).then(price);
+      return this._api.POST('api/blockchain-v1/general/rates').then(process).then(price);
     }
   }
 
