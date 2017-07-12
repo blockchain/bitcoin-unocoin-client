@@ -99,7 +99,7 @@ describe('Unocoin', function () {
       c._debug = false;
 
       spyOn(c._api, 'POST').and.callFake(function (endpoint, data) {
-        if (endpoint === 'api/v1/authentication/register') {
+        if (endpoint === 'api/blockchain-v1/authentication/register') {
           if (data.email_id === 'duplicate@blockchain.com') {
             return Promise.resolve({
               status_code: 724,
@@ -116,7 +116,7 @@ describe('Unocoin', function () {
               access_token: 'offline-token'
             });
           }
-        } if (endpoint === 'trade?all') {
+        } if (endpoint === 'api/blockchain-v1/general/rates') {
           return Promise.resolve({
             buy: 75000,
             buy_btc_fee: 1,
