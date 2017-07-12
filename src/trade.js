@@ -109,7 +109,7 @@ class Trade extends Exchange.Trade {
 
   static buy (quote, medium) {
     const request = (receiveAddress) => {
-      return quote.api.authPOST('api/v1/trading/instant_buyingbtc', {
+      return quote.api.authPOST('api/blockchain-v1/trading/instant_buyingbtc', {
         destination: receiveAddress,
         amount: quote.baseCurrency === 'INR' ? -quote.baseAmount : quote.quoteAmount
       }).then((res) => {
@@ -124,7 +124,7 @@ class Trade extends Exchange.Trade {
   }
 
   static fetchAll (api) {
-    return api.authGET('api/v1/wallet/deposit_history').then(res => {
+    return api.authGET('api/blockchain-v1/wallet/deposit_history').then(res => {
       switch (res.status_code) {
         case 200:
           return res.transactions;
@@ -165,7 +165,7 @@ class Trade extends Exchange.Trade {
         return Promise.reject(res.message);
       }
     };
-    return this._api.authPOST('api/v1/wallet/add_reference', {
+    return this._api.authPOST('api/blockchain-v1/wallet/add_reference', {
       inr_transaction_id: this._id,
       ref_num: ref
     })
@@ -184,7 +184,7 @@ class Trade extends Exchange.Trade {
       }
     };
 
-    return this._api.authPOST('/api/v1/general/inrdepositbankaccount')
+    return this._api.authPOST('/api/blockchain-v1/general/inrdepositbankaccount')
                     .then(processResult);
   }
 

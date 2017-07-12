@@ -221,7 +221,7 @@ class Profile {
       address_proof: this.photos.address.base64.split(',')[1]
     };
 
-    return this._api.authPOST('api/v1/settings/uploaduserprofile', payload).then(res => {
+    return this._api.authPOST('api/blockchain-v1/settings/uploaduserprofile', payload).then(res => {
       if (res.status_code === 200) {
         this._dirty = false;
         this._address.didSave();
@@ -237,7 +237,7 @@ class Profile {
   }
 
   static fetch (api) {
-    return api.authGET('api/v1/wallet/profiledetails').then(res => {
+    return api.authGET('api/blockchain-v1/wallet/profiledetails').then(res => {
       if (res.status_code === 200) {
         return new Profile(res, api);
       } else {

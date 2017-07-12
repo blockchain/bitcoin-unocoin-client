@@ -75,7 +75,7 @@ describe('Trade', function () {
           });
         }
         switch (method) {
-          case 'api/v1/wallet/deposit_history':
+          case 'api/blockchain-v1/wallet/deposit_history':
             response = {
               status_code: 200,
               transactions: [tradeJsonAPI, tradeJsonAPI2]
@@ -93,16 +93,16 @@ describe('Trade', function () {
           });
         }
         switch (method) {
-          case 'api/v1/trading/instant_buyingbtc':
+          case 'api/blockchain-v1/trading/instant_buyingbtc':
             response = {status_code: 200};
             Object.assign(response, tradeJsonAPI);
             // API uses integer when creating a trade, but string when listing
             response.order_id = parseInt(response.order_id);
             return Promise.resolve(response);
-          case 'api/v1/wallet/add_reference':
+          case 'api/blockchain-v1/wallet/add_reference':
             response = {status_code: 200};
             return Promise.resolve(response);
-          case '/api/v1/general/inrdepositbankaccount':
+          case '/api/blockchain-v1/general/inrdepositbankaccount':
             response = {
               status_code: 200,
               bank_account_type: 'Checking',
@@ -161,7 +161,7 @@ describe('Trade', function () {
       });
 
       it('should replace 716 error with empty array', done => {
-        api.shouldFail('api/v1/wallet/deposit_history', 716);
+        api.shouldFail('api/blockchain-v1/wallet/deposit_history', 716);
 
         let check = function (res) {
           expect(res).toEqual([]);
@@ -171,7 +171,7 @@ describe('Trade', function () {
       });
 
       it('should return the message for other erros', done => {
-        api.shouldFail('api/v1/wallet/deposit_history');
+        api.shouldFail('api/blockchain-v1/wallet/deposit_history');
 
         let check = function (res) {
           expect(res).toEqual('FAIL');
@@ -217,7 +217,7 @@ describe('Trade', function () {
       });
 
       it('should return the error upon failure', (done) => {
-        api.shouldFail('api/v1/trading/instant_buyingbtc');
+        api.shouldFail('api/blockchain-v1/trading/instant_buyingbtc');
 
         let checks = (message) => {
           expect(message).toEqual('FAIL');
@@ -463,7 +463,7 @@ describe('Trade', function () {
       });
 
       it('should reject if server returns error', (done) => {
-        api.shouldFail('api/v1/wallet/add_reference');
+        api.shouldFail('api/blockchain-v1/wallet/add_reference');
 
         let checks = res => expect(res).toEqual('FAIL');
 
@@ -481,7 +481,7 @@ describe('Trade', function () {
       });
 
       it('should reject if server returns error', (done) => {
-        api.shouldFail('/api/v1/general/inrdepositbankaccount');
+        api.shouldFail('/api/blockchain-v1/general/inrdepositbankaccount');
 
         let checks = res => expect(res).toEqual('FAIL');
 

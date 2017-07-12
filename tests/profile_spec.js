@@ -124,14 +124,14 @@ describe('Profile', function () {
         spyOn(api, 'authGET').and.callThrough();
 
         let checks = () => {
-          expect(api.authGET).toHaveBeenCalledWith('api/v1/wallet/profiledetails');
+          expect(api.authGET).toHaveBeenCalledWith('api/blockchain-v1/wallet/profiledetails');
         };
 
         Profile.fetch(api).then(checks).then(done);
       });
 
       it('should return error message if it fails', done => {
-        api.shouldFail('api/v1/wallet/profiledetails');
+        api.shouldFail('api/blockchain-v1/wallet/profiledetails');
         spyOn(api, 'authGET').and.callThrough();
 
         let checks = (res) => {
@@ -258,7 +258,7 @@ describe('Profile', function () {
       it('calls settings/uploaduserprofile', done => {
         let checks = () => {
           expect(api.authPOST).toHaveBeenCalled();
-          expect(api.authPOST.calls.argsFor(0)[0]).toEqual(('api/v1/settings/uploaduserprofile'));
+          expect(api.authPOST.calls.argsFor(0)[0]).toEqual(('api/blockchain-v1/settings/uploaduserprofile'));
         };
 
         profile.verify().then(checks).catch(fail).then(done);
@@ -282,7 +282,7 @@ describe('Profile', function () {
 
       describe('fails', () => {
         beforeEach(() => {
-          api.shouldFail('api/v1/settings/uploaduserprofile');
+          api.shouldFail('api/blockchain-v1/settings/uploaduserprofile');
         });
 
         it('should return the error message', (done) => {
