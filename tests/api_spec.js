@@ -56,9 +56,9 @@ describe('Unocoin API', function () {
     });
 
     describe('_url', () => {
-      it('should use unocoin.co in production', () => {
+      it('should use unocoin.com in production', () => {
         api._production = true;
-        expect(api._url()).toEqual('https://unocoin.co/');
+        expect(api._url()).toEqual('https://www.unocoin.com/');
       });
 
       it('should use sandbox for testing', () => {
@@ -68,7 +68,7 @@ describe('Unocoin API', function () {
 
       it('should include the endpoint', () => {
         api._production = true;
-        expect(api._url('endpoint')).toEqual('https://unocoin.co/endpoint');
+        expect(api._url('endpoint')).toEqual('https://www.unocoin.com/endpoint');
       });
     });
 

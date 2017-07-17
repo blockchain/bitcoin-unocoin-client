@@ -24,7 +24,7 @@ class API extends Exchange.API {
 
   _url (endpoint) {
     endpoint = endpoint || '';
-    return `https://${this._production ? '' : 'sandbox.'}unocoin.co/${endpoint}`;
+    return `https://${this._production ? 'www.' : ''}${this._production ? '' : 'sandbox.'}unocoin.${this._production ? 'com' : 'co'}/${endpoint}`;
   }
 
   _request (method, endpoint, data, extraHeaders = {}, authorized) {
