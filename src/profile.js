@@ -70,6 +70,8 @@ class Profile {
         in: obj.user_buy_limit || 0
       }
     });
+
+    this._submittedBankInfo = false;
   }
 
   get readOnly () {
@@ -96,7 +98,8 @@ class Profile {
   get bankInfoComplete () {
     return this.level > 1 || Boolean(
       this.ifsc &&
-      this.bankAccountNumber
+      this.bankAccountNumber &&
+      this._submittedBankInfo
     );
   }
 
@@ -182,6 +185,14 @@ class Profile {
 
   get currentLimits () {
     return this._currentLimits;
+  }
+
+  get submittedBankInfo () {
+    return this._submittedBankInfo;
+  }
+
+  set submittedBankInfo (val) {
+    this._submittedBankInfo = val;
   }
 
   addPhoto (type, base64) {
