@@ -214,6 +214,7 @@ describe('Profile', function () {
         expect(profile.bankInfoComplete).toBeFalsy();
         profile.ifsc = '123';
         profile.bankAccountNumber = '456';
+        profile.submittedBankInfo = true;
         expect(profile.bankInfoComplete).toBeTruthy();
       });
     });
@@ -236,6 +237,7 @@ describe('Profile', function () {
         profile.mobile = '+91234567893';
         profile.pancard = 'BAD876G570';
         profile.bankAccountNumber = '123';
+        profile.submittedBankInfo = true;
         profile.ifsc = '456';
         profile._photos = {
           address: {base64: 'base64'},
