@@ -312,15 +312,15 @@ describe('Trade', function () {
         expect(t.state).toBe('awaiting_reference_number');
       });
 
-      it('should use unixtime field when creating new trade', () => {
-        tradeJsonAPI.unixtime = 1498570709;
+      it('should use unix_time field when creating new trade', () => {
+        tradeJsonAPI.unix_time = 1498570709;
         tradeJsonAPI.requested_time = undefined;
         t.setFromAPI(tradeJsonAPI);
         expect(t.createdAt).toEqual(new Date(1498570709 * 1000));
       });
 
       it('should warn if creation time is missing', () => {
-        tradeJsonAPI.unixtime = undefined;
+        tradeJsonAPI.unix_time = undefined;
         tradeJsonAPI.requested_time = undefined;
         spyOn(window.console, 'warn');
         t.setFromAPI(tradeJsonAPI);
