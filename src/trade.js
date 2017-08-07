@@ -77,9 +77,9 @@ class Trade extends Exchange.Trade {
         this._state = 'awaiting_reference_number';
     }
 
-    if (obj.unixtime) {
+    if (obj.unix_time) {
       // API returns unix timestamp when creating a trade
-      this._createdAt = new Date(obj.unixtime * 1000);
+      this._createdAt = new Date(obj.unix_time * 1000);
     } else if (obj.requested_time) {
        // API returns date-time string when listing trades
       this._createdAt = new Date(obj.requested_time);
