@@ -54,10 +54,7 @@ class Unocoin extends Exchange.Exchange {
   signup () {
     var self = this;
     var runChecks = function () {
-      assert(!self.user, 'Already signed up');
-
       assert(self.delegate, 'ExchangeDelegate required');
-
       assert(self.delegate.email(), 'email required');
       assert(self.delegate.isEmailVerified(), 'email must be verified');
     };
@@ -76,7 +73,7 @@ class Unocoin extends Exchange.Exchange {
         case 200:
           return res.access_token;
         case 724:
-          return Promise.reject({error: 'email_already_used', message: res.message});
+          return Promise.reject({error: 'user is already registered', message: res.message});
         default:
           return Promise.reject({error: res.status_code, message: res.message});
       }
