@@ -203,7 +203,7 @@ describe('Unocoin', function () {
       it('lets the user know if email is already registered', function (done) {
         c.delegate.email = () => 'duplicate@blockchain.com';
         let promise = c.signup();
-        expect(promise).toBeRejectedWith(jasmine.objectContaining({error: 'email_already_used'}), done);
+        expect(promise).toBeRejectedWith(jasmine.objectContaining({error: 'user is already registered'}), done);
       });
 
       it('might fail for an unexpected reason', function (done) {
