@@ -21,6 +21,7 @@ class Trade extends Exchange.Trade {
     if (obj) {
       this._id = obj.id;
       this._state = obj.state;
+      this._txHash = obj.tx_hash;
 
       this._delegate.deserializeExtraFields(obj, this);
       this._confirmed = obj.confirmed;
