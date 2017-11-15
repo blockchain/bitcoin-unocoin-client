@@ -327,10 +327,10 @@ describe('Trade', function () {
         expect(window.console.warn).toHaveBeenCalled();
       });
 
-      it('should use btc value as outAmountExpected before completed', () => {
+      it('should use btc value as receiveAmount before completed', () => {
         tradeJsonAPI.btc = '1.0';
         t.setFromAPI(tradeJsonAPI);
-        expect(t.outAmountExpected).toEqual(100000000);
+        expect(t.receiveAmount).toEqual(100000000);
         expect(t.outAmount).toEqual(null);
       });
 
@@ -345,7 +345,7 @@ describe('Trade', function () {
         tradeJsonAPI.btc = undefined;
         t._delegate.ticker = {buy: {price: 75000}};
         t.setFromAPI(tradeJsonAPI);
-        expect(t.outAmountExpected).toEqual(200000000);
+        expect(t.receiveAmount).toEqual(200000000);
       });
     });
 
