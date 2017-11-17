@@ -103,7 +103,7 @@ class Trade extends Exchange.Trade {
         this._receiveAmount = this._outAmount;
       }
     } else if (this._delegate.ticker) {
-      this._receiveAmount = Math.round(this._inAmount / this._delegate.ticker.buy.price * 100000000);
+      this._receiveAmount = parseFloat((this._inAmount / this._delegate.ticker.buy.price).toFixed(8));
     }
   }
 
