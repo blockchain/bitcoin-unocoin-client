@@ -339,7 +339,7 @@ describe('Trade', function () {
         tradeJsonAPI.btc = undefined;
         t._delegate.ticker = {buy: {price: 75000}};
         t.setFromAPI(tradeJsonAPI);
-        expect(t._receiveAmount).toEqual(200000000);
+        expect(t._receiveAmount).toEqual(2);
       });
     });
 
