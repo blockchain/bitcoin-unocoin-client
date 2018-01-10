@@ -21,6 +21,7 @@ class Trade extends Exchange.Trade {
     if (obj) {
       this._id = obj.id;
       this._state = obj.state;
+      this._txHash = obj.tx_hash;
 
       this._delegate.deserializeExtraFields(obj, this);
       this._confirmed = obj.confirmed;
@@ -92,17 +93,17 @@ class Trade extends Exchange.Trade {
     this._sendAmount = this._inAmount;
 
     this._outAmount = null;
-    this._outAmountExpected = null;
+    this._receiveAmount = null;
 
     if (obj.btc && obj.btc !== '' && obj.btc !== '0') {
       if (this.state !== 'completed') {
-        this._outAmountExpected = parseFloat(obj.btc) * 100000000.0;
+        this._receiveAmount = parseFloat(obj.btc);
       } else {
-        this._outAmount = parseFloat(obj.btc) * 100000000.0;
-        this._outAmountExpected = this._outAmount;
+        this._outAmount = parseFloat(obj.btc);
+        this._receiveAmount = this._outAmount;
       }
     } else if (this._delegate.ticker) {
-      this._outAmountExpected = Math.round(this._inAmount / this._delegate.ticker.buy.price * 100000000);
+      this._receiveAmount = parseFloat((this._inAmount / this._delegate.ticker.buy.price).toFixed(8));
     }
   }
 
